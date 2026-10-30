@@ -28,9 +28,47 @@ To run with PostgreSQL, set `SPRING_PROFILES_ACTIVE=prod`, `DB_URL`, `DB_USERNAM
 
 The optional `website` field is a honeypot for the future hidden frontend input. A nonblank value receives a synthetic 201 receipt without saving a request or sending mail. Blank or absent values follow normal validation.
 
-Only `POST /api/contact` is rate limited. The default is 5 attempts per IP per 600 seconds, including invalid requests and honeypot submissions. Configure `app.contact.rate-limit.limit`, `app.contact.rate-limit.window-seconds`, and `app.contact.rate-limit.max-ips` through Spring configuration. The limiter removes expired windows on each attempt, caps tracking at 10,000 IPs, and rejects new IPs while capacity is full. Limits are per application process and reset on restart.
+`POST /api/contact` defaults to 5 attempts per IP per 600 seconds, including invalid requests and honeypot submissions. `POST /authenticate` has an independent allowance of 10 attempts per IP per 600 seconds, including failed logins. Configure `app.contact.rate-limit.limit`, `app.contact.rate-limit.window-seconds`, and `app.contact.rate-limit.max-ips` for contact requests; use the same suffixes under `app.auth.rate-limit` for authentication. Each limiter removes expired windows on an attempt, caps tracking at 10,000 IPs, and rejects new IPs while capacity is full. Limits are per application process and reset on restart.
 
 The prod profile uses Spring's forwarded-header handling. Put production behind a trusted reverse proxy that replaces client-supplied forwarded headers; the limiter reads only the resulting servlet `getRemoteAddr()`.
+
+## Admin login and local admin creation
+
+The lecturer's security classes are copied under their original sub-packages in `com.site.server`. Users retain the original JdbcTemplate repository, String username primary key, and USER/ADMIN roles. Flyway V2 creates the original users table without seed accounts. `reference/` is ignored and remains a read-only source; do not build it.
+
+| Variable | Purpose |
+| --- | --- |
+| `JWT_SECRET` | Base64 encoding of at least 32 cryptographically random bytes; required in prod |
+| `ADMIN_USERNAME` | Username to create if it does not already exist |
+| `ADMIN_PASSWORD` | Initial admin password, hashed with bcrypt by UserService |
+| `ADMIN_FIRST_NAME` | First name required when creating an admin |
+| `ADMIN_LAST_NAME` | Last name required when creating an admin |
+| `ADMIN_EMAIL` | Unique email required when creating an admin |
+
+The dev and test profiles have an explicitly marked public, non-secret JWT key. Production has no default key. JWT expiration remains the base's `36000000` milliseconds (10 hours). Keep production JWT keys and admin credentials in the process environment or a secret manager.
+
+For a local admin, run the following from `server/`, replacing the example identity fields. The password is prompted rather than written into a file:
+
+```powershell
+$env:ADMIN_USERNAME = "local-admin"
+$env:ADMIN_FIRST_NAME = "Site"
+$env:ADMIN_LAST_NAME = "Admin"
+$env:ADMIN_EMAIL = "you@example.com"
+$adminPasswordInput = Read-Host "Initial admin password" -AsSecureString
+$env:ADMIN_PASSWORD = [System.Net.NetworkCredential]::new("", $adminPasswordInput).Password
+.\mvnw.cmd spring-boot:run
+```
+
+Bootstrap runs after migrations. It acts only when both username and password are set and the username does not exist; repeating startup leaves the existing account and password unchanged. After creating the account, remove the bootstrap environment variables from the startup environment. They are not a password-reset mechanism.
+
+`POST /authenticate` accepts `{"username":"...","password":"..."}` and returns `{"jwt":"..."}` for correct credentials, or 403 for an incorrect password. Send the returned token as `Authorization: Bearer <jwt>`:
+
+- `GET /admin/contact-requests?page=0&size=20` returns newest requests first; the default page size is 20.
+- `PUT /admin/contact-requests/{id}/status` accepts `{"status":"NEW"}` or `{"status":"HANDLED"}` and returns 204; a missing request returns 404.
+
+Both admin endpoints require ADMIN authority. `/users/register` requires authentication under the base's unchanged `/users/**` rule. `/authenticate`, `/api/contact`, and `/api/health` remain public. The base still permits the disabled `/h2-console/**` path. `spring.main.allow-circular-references=true` is retained as required by the base.
+
+The existing `CorsConfig` now covers authentication and admin paths as well as `/api/**`, using `CORS_ALLOWED_ORIGIN` and allowing Authorization, Content-Type, PUT, and DELETE. The base CORS override and its two hard-coded controller `@CrossOrigin` annotations were removed so this is the single CORS configuration.
 
 ## Email notifications
 

@@ -10,9 +10,16 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> responseStatus(ResponseStatusException exception) {
+        return ResponseEntity.status(exception.getStatusCode())
+                .body(Map.of("error", HttpStatus.valueOf(exception.getStatusCode().value()).name()));
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> validationFailed(ConstraintViolationException exception) {
         Map<String, String> fields = new LinkedHashMap<>();

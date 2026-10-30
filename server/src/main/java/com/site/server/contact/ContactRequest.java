@@ -74,5 +74,6 @@ public class ContactRequest {
     public WorkType getWorkType() { return workType; }
     public String getDescription() { return description; }
     public RequestStatus getStatus() { return status; }
+    public void setStatus(RequestStatus status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }
