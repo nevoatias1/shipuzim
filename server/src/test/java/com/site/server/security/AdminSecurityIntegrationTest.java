@@ -77,14 +77,24 @@ class AdminSecurityIntegrationTest {
                         null, WorkType.CLADDING, null)).toList());
         mockMvc.perform(get("/admin/contact-requests").header("Authorization", token("stage3-test-admin")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(20)))
+                .andExpect(jsonPath("$.items", hasSize(20)))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.totalPages").value(2))
+                .andExpect(jsonPath("$.content").doesNotExist())
+                .andExpect(jsonPath("$.pageable").doesNotExist())
                 .andExpect(jsonPath("$.totalElements").value(21))
-                .andExpect(jsonPath("$.content[0].id").value(saved.getLast().getId()));
+                .andExpect(jsonPath("$.items[0].id").value(saved.getLast().getId()))
+                .andExpect(jsonPath("$.items[0].fullName").value(saved.getLast().getFullName()))
+                .andExpect(jsonPath("$.items[0].phone").value("0501234567"))
+                .andExpect(jsonPath("$.items[0].workType").value("CLADDING"))
+                .andExpect(jsonPath("$.items[0].status").value("NEW"))
+                .andExpect(jsonPath("$.items[0].createdAt").isNotEmpty());
         mockMvc.perform(get("/admin/contact-requests?page=1&size=20")
                         .header("Authorization", token("stage3-test-admin")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].id").value(saved.getFirst().getId()));
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.items[0].id").value(saved.getFirst().getId()));
     }
 
     @Test

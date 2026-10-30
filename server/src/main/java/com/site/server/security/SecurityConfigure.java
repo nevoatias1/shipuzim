@@ -3,6 +3,7 @@ package com.site.server.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -36,6 +37,7 @@ public class SecurityConfigure implements WebMvcConfigurer {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/authenticate", "/api/contact", "/api/health",
                                 "/h2-console/**").permitAll() // Public endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/gallery", "/uploads/**").permitAll()
                         .requestMatchers("/users/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasAuthority("ADMIN") // Admin-only routes
                         .anyRequest().authenticated() // Require authentication for all other requests

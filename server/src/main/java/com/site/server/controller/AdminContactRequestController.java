@@ -1,11 +1,10 @@
 package com.site.server.controller;
 
 import com.site.server.contact.AdminContactRequestService;
-import com.site.server.contact.ContactRequest;
+import com.site.server.contact.AdminContactRequestPage;
 import com.site.server.contact.RequestStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,9 +24,9 @@ public class AdminContactRequestController {
     }
 
     @GetMapping
-    public Page<ContactRequest> list(@RequestParam(defaultValue = "0") int page,
+    public AdminContactRequestPage list(@RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "20") int size) {
-        return service.list(page, size);
+        return AdminContactRequestPage.from(service.list(page, size));
     }
 
     @PutMapping("/{id}/status")
