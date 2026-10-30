@@ -6,6 +6,15 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': 'http://localhost:8080',
+      '/authenticate': 'http://localhost:8080',
+      '/admin': {
+        target: 'http://localhost:8080',
+        bypass(request) {
+          if (request.headers.accept?.includes('text/html')
+              && request.url?.split('?')[0].replace(/\/$/, '') === '/admin') return '/index.html'
+        },
+      },
+      '/uploads': 'http://localhost:8080',
     },
   },
 })

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
 import { submitContactRequest } from './api/contact.js'
+import AdminPage from './admin/AdminPage.jsx'
+import HomeGallery from './components/HomeGallery.jsx'
 import siteContent from './content/siteContent.js'
 
 const phonePattern = /^(?:0|\+972)[ -]?(?:5\d(?:[ -]?\d){7}|[23489](?:[ -]?\d){7})$/
@@ -152,35 +154,6 @@ function Services() {
             </article>
           ))}
         </div>
-      </div>
-    </section>
-  )
-}
-
-function Gallery() {
-  return (
-    <section className="section gallery-section" id="gallery" aria-labelledby="gallery-title">
-      <div className="wrap">
-        <div className="gallery-heading-row">
-          <SectionHeading id="gallery-title" {...siteContent.gallery} />
-          <span className="gallery-count" aria-label={siteContent.gallery.countLabel}>
-            <span>0{siteContent.gallery.items.length}</span> / {siteContent.gallery.countTotal}
-          </span>
-        </div>
-        <div className="gallery-grid">
-          {siteContent.gallery.items.map((item, index) => (
-            <article className={`gallery-tile gallery-tile-${item.tone}`} key={item.id}>
-              <div className="material-art" role="img" aria-label={item.label}>
-                <span className="material-shape" />
-                <span className="material-orbit" />
-                <span className="material-number">0{index + 1}</span>
-                <span className="material-label">{siteContent.gallery.tilePlaceholder}</span>
-              </div>
-              <div className="gallery-caption"><h3>{item.label}</h3><span>{item.material}</span></div>
-            </article>
-          ))}
-        </div>
-        <p className="gallery-note"><span aria-hidden="true">✳</span>{siteContent.gallery.note}</p>
       </div>
     </section>
   )
@@ -434,7 +407,7 @@ function HomePage() {
       <main id="top">
         <Hero />
         <Services />
-        <Gallery />
+        <HomeGallery><SectionHeading id="gallery-title" {...siteContent.gallery} /></HomeGallery>
         <Process />
         <ContactForm />
         <Reviews />
@@ -478,7 +451,7 @@ function App() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/privacy" element={<PlaceholderPage page={siteContent.privacyPage} />} />
-      <Route path="/admin" element={<PlaceholderPage page={siteContent.adminPage} />} />
+      <Route path="/admin" element={<AdminPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
