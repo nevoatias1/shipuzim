@@ -1,6 +1,7 @@
 package com.site.server;
 
 import com.site.server.gallery.ImageUploadException;
+import com.site.server.google.GoogleSignInException;
 import jakarta.validation.ConstraintViolationException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,6 +20,12 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler(GoogleSignInException.class)
+    public ResponseEntity<Map<String, String>> googleSignIn(GoogleSignInException exception) {
+        return ResponseEntity.status(exception.getStatus())
+                .body(Map.of("error", exception.getError(), "message", exception.getMessage()));
+    }
+
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Map<String, String>> missingResource(NoResourceFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "NOT_FOUND"));

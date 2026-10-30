@@ -28,14 +28,14 @@ public class ContactRateLimitFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI().substring(request.getContextPath().length());
         return !"POST".equals(request.getMethod())
-                || !("/api/contact".equals(path) || "/authenticate".equals(path));
+                || !("/api/contact".equals(path) || "/authenticate".equals(path) || "/auth/google".equals(path));
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        ContactRateLimiter selected = request.getRequestURI().equals(request.getContextPath() + "/authenticate")
-                ? authenticationLimiter : limiter;
+        ContactRateLimiter selected = request.getRequestURI().equals(request.getContextPath() + "/api/contact")
+                ? limiter : authenticationLimiter;
         if (!selected.allow(request.getRemoteAddr())) {
             response.setStatus(429);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);

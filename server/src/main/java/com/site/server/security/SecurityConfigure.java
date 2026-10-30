@@ -35,9 +35,9 @@ public class SecurityConfigure implements WebMvcConfigurer {
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless sessions
                 .cors(Customizer.withDefaults()) // Enable cors for Spring Security
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/authenticate", "/api/contact", "/api/health",
+                        .requestMatchers("/authenticate", "/auth/google", "/api/contact", "/api/health",
                                 "/h2-console/**").permitAll() // Public endpoints
-                        .requestMatchers(HttpMethod.GET, "/api/gallery", "/uploads/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/gallery", "/uploads/**", "/api/reviews").permitAll()
                         .requestMatchers("/users/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasAuthority("ADMIN") // Admin-only routes
                         .anyRequest().authenticated() // Require authentication for all other requests
