@@ -24,6 +24,11 @@
 - Added default H2 file dev profile, PostgreSQL prod profile, and in-memory H2 test profile.
 - Added MockMvc coverage for create, field validation, server-controlled id/status, phone normalization, malformed JSON, and health.
 - Documented the H2 development database in README.
+- Stage 2: added the optional `website` honeypot and bounded in-memory IP rate limiting on `POST /api/contact` (default 5 attempts per 10 minutes).
+- Added conditional SMTP/no-op notification services, Hebrew plain-text mail, and bounded asynchronous delivery after transaction commit. Notification failures cannot change the API response.
+- Added spam protection, notification failure, after-commit delivery, limiter expiry/capacity, and SMTP content tests.
+- Redacted request/event string representations and disabled framework payload and JDBC parameter logging to keep request contents out of logs.
+- Set `spring.jpa.open-in-view=false`, removed explicit H2 dialects, and enabled Spring forwarded-header handling in prod. The POM contains no custom repositories; dependencies resolve from Maven Central.
 
 ## Decisions
 
@@ -31,11 +36,14 @@
 - Optional blank email, city, and description values are stored as null.
 - Database timestamps are set by the server in UTC.
 - Production database settings are required environment variables without defaults.
+- Mail is disabled by default; enabling it requires SMTP and sender/recipient environment settings. SMTP uses authenticated STARTTLS and UTF-8.
+- Rate limits and queued notifications are local to the application process. Mail is best effort without retries; the database remains the source of saved requests.
 
 ## Verification
 
-- Test execution and app startup were attempted. Maven Central dependency downloads are blocked by network permissions in this environment, beginning with the Spring Boot parent POM `3.5.16`.
+- Stage 2: all 18 tests passed, with 0 failures/errors/skips. The environment's default Maven cache (`C:\.m2\repository`) was not writable, so verification used temporary settings pointing to `server/target/m2`. Network permissions initially blocked downloads; permitted access then resolved all dependencies from Maven Central. The final successful command was `.\mvnw.cmd -o -s target\verify-settings.xml test`.
+- UTF-8 without BOM, POM XML, Maven Central-only repositories, and removal of explicit H2 dialect settings were checked. Actual SMTP delivery requires configured credentials and addresses; tests use mocks and send no real mail.
 
 ## Next step
 
-Stage 2: spam protection + email notification
+Stage 3: integrate the lecturer's security base for admin login

@@ -3,6 +3,7 @@ package com.site.server.contact;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class ContactRequestControllerTest {
+    private static final AtomicInteger NEXT_IP = new AtomicInteger();
     @Autowired
     private MockMvc mockMvc;
 
@@ -36,6 +38,7 @@ class ContactRequestControllerTest {
     @Test
     void validRequestIsSavedAsNewAndReturnsOnlyReceiptFields() throws Exception {
         String response = mockMvc.perform(post("/api/contact")
+                        .with(request -> { request.setRemoteAddr("192.0.2." + NEXT_IP.incrementAndGet()); return request; })
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validRequest()))
                 .andExpect(status().isCreated())
@@ -69,6 +72,7 @@ class ContactRequestControllerTest {
                 """;
 
         String response = mockMvc.perform(post("/api/contact")
+                        .with(request -> { request.setRemoteAddr("192.0.2." + NEXT_IP.incrementAndGet()); return request; })
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
@@ -85,6 +89,7 @@ class ContactRequestControllerTest {
     @MethodSource("invalidRequests")
     void invalidFieldsReturnBadRequestWithFieldErrors(String request, String expectedField) throws Exception {
         mockMvc.perform(post("/api/contact")
+                        .with(httpRequest -> { httpRequest.setRemoteAddr("192.0.2." + NEXT_IP.incrementAndGet()); return httpRequest; })
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(request))
                 .andExpect(status().isBadRequest())
@@ -105,6 +110,7 @@ class ContactRequestControllerTest {
     @Test
     void malformedJsonReturnsBadRequest() throws Exception {
         mockMvc.perform(post("/api/contact")
+                        .with(request -> { request.setRemoteAddr("192.0.2." + NEXT_IP.incrementAndGet()); return request; })
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{not-json"))
                 .andExpect(status().isBadRequest())

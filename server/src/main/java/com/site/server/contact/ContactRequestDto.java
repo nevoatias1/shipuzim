@@ -29,7 +29,9 @@ public record ContactRequestDto(
         WorkType workType,
 
         @Size(max = 1000, message = "Description must be at most 1000 characters")
-        String description
+        String description,
+
+        String website
 ) {
     public ContactRequestDto {
         fullName = trim(fullName);
@@ -37,6 +39,7 @@ public record ContactRequestDto(
         email = blankToNull(email);
         city = blankToNull(city);
         description = blankToNull(description);
+        website = blankToNull(website);
     }
 
     private static String trim(String value) {
@@ -54,5 +57,10 @@ public record ContactRequestDto(
             return "0" + digits.substring(4);
         }
         return digits;
+    }
+
+    @Override
+    public String toString() {
+        return "ContactRequestDto[redacted]";
     }
 }
