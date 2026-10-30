@@ -34,6 +34,12 @@ public class GalleryService {
         return repository.findAll(order).stream().map(GalleryItemResponse::from).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<AdminGalleryItemResponse> listForAdmin() {
+        Sort order = Sort.by("sortOrder").ascending().and(Sort.by("createdAt", "id").descending());
+        return repository.findAll(order).stream().map(AdminGalleryItemResponse::from).toList();
+    }
+
     public GalleryItemResponse create(GalleryUploadRequest request) {
         byte[] image = sanitizer.sanitize(request.file());
         ImageStorage.StoredImage stored = storage.store(image);

@@ -1,6 +1,7 @@
 package com.site.server.controller;
 
 import com.site.server.gallery.GalleryItemResponse;
+import com.site.server.gallery.AdminGalleryItemResponse;
 import com.site.server.gallery.GalleryService;
 import com.site.server.gallery.GalleryUpdateRequest;
 import com.site.server.gallery.GalleryUploadRequest;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +25,9 @@ public class AdminGalleryController {
     private final GalleryService service;
 
     public AdminGalleryController(GalleryService service) { this.service = service; }
+
+    @GetMapping
+    public java.util.List<AdminGalleryItemResponse> list() { return service.listForAdmin(); }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<GalleryItemResponse> upload(@Valid @ModelAttribute GalleryUploadRequest request) {

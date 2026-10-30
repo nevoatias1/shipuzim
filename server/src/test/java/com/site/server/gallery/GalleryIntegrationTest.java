@@ -129,6 +129,27 @@ class GalleryIntegrationTest {
                 .andExpect(jsonPath("$[0].id").value(first))
                 .andExpect(jsonPath("$[1].id").value(third))
                 .andExpect(jsonPath("$[2].id").value(second));
+        mvc.perform(get("/admin/gallery").header("Authorization", token(Role.ADMIN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(first))
+                .andExpect(jsonPath("$[0].sortOrder").value(-1))
+                .andExpect(jsonPath("$[0].createdAt").exists());
+    }
+
+    @Test
+    void adminGalleryListRejectsAnonymousAndUserTokens() throws Exception {
+        long id = uploaded(png(), "admin-list.png", "image/png", "Caption").get("id").asLong();
+        mvc.perform(get("/admin/gallery")).andExpect(status().isForbidden());
+        mvc.perform(get("/admin/gallery").header("Authorization", token(Role.USER)))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/admin/gallery").header("Authorization", token(Role.ADMIN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(id))
+                .andExpect(jsonPath("$[0].imageUrl").isNotEmpty())
+                .andExpect(jsonPath("$[0].caption").value("Caption"))
+                .andExpect(jsonPath("$[0].category").value("CLADDING"))
+                .andExpect(jsonPath("$[0].sortOrder").value(0))
+                .andExpect(jsonPath("$[0].createdAt").exists());
     }
 
     @Test

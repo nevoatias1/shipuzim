@@ -144,7 +144,7 @@ function UploadForm({ onUploaded }) {
 }
 
 function GalleryCard({ item, position, onChanged }) {
-  const [values, setValues] = useState({ caption: item.caption ?? '', category: item.category, sortOrder: '' })
+  const [values, setValues] = useState({ caption: item.caption ?? '', category: item.category, sortOrder: String(item.sortOrder) })
   const [errors, setErrors] = useState({})
   const [error, setError] = useState('')
   const [action, setAction] = useState('')

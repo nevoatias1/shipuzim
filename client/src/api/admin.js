@@ -14,7 +14,7 @@ export function updateRequestStatus(id, status) {
 }
 
 export async function getAdminGallery(signal) {
-  const data = await adminRequest('/api/gallery', { signal })
+  const data = await adminRequest('/admin/gallery', { signal })
   if (!Array.isArray(data)) throw new ApiError(500)
   return data
 }
