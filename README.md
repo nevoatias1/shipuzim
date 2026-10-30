@@ -100,3 +100,5 @@ npm run dev
 ```
 
 Open the URL printed by Vite, normally `http://localhost:5173`. Vite proxies `/api` requests to the server on port 8080. Run `npm run lint` and `npm run build` from `client` to check the client.
+
+The client reads `VITE_API_URL` as the API origin. Leave it empty in local development to use Vite's `/api` proxy; set it in `client/.env.local` only when connecting directly to an API hosted elsewhere. `client/.env.example` contains the empty placeholder.

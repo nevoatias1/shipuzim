@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
+import { submitContactRequest } from './api/contact.js'
 import siteContent from './content/siteContent.js'
 
 const phonePattern = /^(?:0|\+972)[ -]?(?:5\d(?:[ -]?\d){7}|[23489](?:[ -]?\d){7})$/
@@ -205,19 +206,31 @@ function Process() {
 }
 
 function ContactForm() {
-  const [values, setValues] = useState({ fullName: '', phone: '', city: '', workType: '', description: '', website: '' })
+  const initialValues = { fullName: '', phone: '', city: '', workType: '', description: '', website: '' }
+  const [values, setValues] = useState(initialValues)
   const [errors, setErrors] = useState({})
-  const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [feedback, setFeedback] = useState(null)
+  const fieldRefs = useRef({})
+  const submittingRef = useRef(false)
+
+  function focusFirstError(nextErrors) {
+    const fieldOrder = ['fullName', 'phone', 'city', 'workType', 'description']
+    const firstInvalidField = fieldOrder.find((field) => nextErrors[field] && fieldRefs.current[field])
+    if (firstInvalidField) window.requestAnimationFrame(() => fieldRefs.current[firstInvalidField]?.focus())
+  }
 
   function updateValue(event) {
     const { name, value } = event.target
     setValues((current) => ({ ...current, [name]: value }))
     setErrors((current) => ({ ...current, [name]: '' }))
-    setSubmitted(false)
+    setFeedback(null)
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
+    if (submittingRef.current) return
+
     const nextErrors = {}
     const fullName = values.fullName.trim()
     if (fullName.length < 2 || fullName.length > 80) nextErrors.fullName = siteContent.form.errors.name
@@ -226,7 +239,44 @@ function ContactForm() {
     if (!siteContent.form.workTypes.some((option) => option.value === values.workType)) nextErrors.workType = siteContent.form.errors.workType
     if (values.description.length > 1000) nextErrors.description = siteContent.form.errors.description
     setErrors(nextErrors)
-    if (Object.keys(nextErrors).length === 0) setSubmitted(true)
+    setFeedback(null)
+    if (Object.keys(nextErrors).length > 0) {
+      focusFirstError(nextErrors)
+      return
+    }
+
+    submittingRef.current = true
+    setIsSubmitting(true)
+    try {
+      await submitContactRequest({
+        fullName: values.fullName,
+        phone: values.phone,
+        city: values.city,
+        workType: values.workType,
+        description: values.description,
+        website: values.website,
+      })
+      setValues(initialValues)
+      setErrors({})
+      setFeedback({ type: 'success' })
+    } catch (error) {
+      if (error.status === 400 && error.code === 'VALIDATION_FAILED') {
+        const serverErrors = error.fields ?? {}
+        setErrors(serverErrors)
+        if (Object.keys(serverErrors).length > 0) {
+          focusFirstError(serverErrors)
+        } else {
+          setFeedback({ type: 'generalError' })
+        }
+      } else if (error.status === 429) {
+        setFeedback({ type: 'rateLimited' })
+      } else {
+        setFeedback({ type: 'generalError' })
+      }
+    } finally {
+      submittingRef.current = false
+      setIsSubmitting(false)
+    }
   }
 
   function errorProps(name) {
@@ -253,41 +303,50 @@ function ContactForm() {
           <div className="form-row">
             <div className="form-field">
               <label htmlFor="fullName">{siteContent.form.fullName}<span aria-hidden="true">*</span></label>
-              <input id="fullName" name="fullName" type="text" autoComplete="name" required placeholder={siteContent.form.fullNamePlaceholder} value={values.fullName} onChange={updateValue} {...errorProps('fullName')} />
-              {errors.fullName && <span className="field-error" id="fullName-error">{errors.fullName}</span>}
+              <input ref={(element) => { fieldRefs.current.fullName = element }} id="fullName" name="fullName" type="text" autoComplete="name" required placeholder={siteContent.form.fullNamePlaceholder} value={values.fullName} onChange={updateValue} {...errorProps('fullName')} />
+              {errors.fullName && <span className="field-error" id="fullName-error" aria-live="polite">{errors.fullName}</span>}
             </div>
             <div className="form-field">
               <label htmlFor="phone">{siteContent.form.phone}<span aria-hidden="true">*</span></label>
-              <input id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" required placeholder={siteContent.form.phonePlaceholder} value={values.phone} onChange={updateValue} {...errorProps('phone')} />
-              {errors.phone && <span className="field-error" id="phone-error">{errors.phone}</span>}
+              <input ref={(element) => { fieldRefs.current.phone = element }} id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" required placeholder={siteContent.form.phonePlaceholder} value={values.phone} onChange={updateValue} {...errorProps('phone')} />
+              {errors.phone && <span className="field-error" id="phone-error" aria-live="polite">{errors.phone}</span>}
             </div>
           </div>
           <div className="form-row">
             <div className="form-field">
               <label htmlFor="city">{siteContent.form.city}</label>
-              <input id="city" name="city" type="text" autoComplete="address-level2" maxLength={60} placeholder={siteContent.form.cityPlaceholder} value={values.city} onChange={updateValue} {...errorProps('city')} />
-              {errors.city && <span className="field-error" id="city-error">{errors.city}</span>}
+              <input ref={(element) => { fieldRefs.current.city = element }} id="city" name="city" type="text" autoComplete="address-level2" maxLength={60} placeholder={siteContent.form.cityPlaceholder} value={values.city} onChange={updateValue} {...errorProps('city')} />
+              {errors.city && <span className="field-error" id="city-error" aria-live="polite">{errors.city}</span>}
             </div>
             <div className="form-field">
               <label htmlFor="workType">{siteContent.form.workType}<span aria-hidden="true">*</span></label>
-              <select id="workType" name="workType" required value={values.workType} onChange={updateValue} {...errorProps('workType')}>
+              <select ref={(element) => { fieldRefs.current.workType = element }} id="workType" name="workType" required value={values.workType} onChange={updateValue} {...errorProps('workType')}>
                 <option value="">{siteContent.form.workTypePlaceholder}</option>
                 {siteContent.form.workTypes.map((option) => <option value={option.value} key={option.value}>{option.label}</option>)}
               </select>
-              {errors.workType && <span className="field-error" id="workType-error">{errors.workType}</span>}
+              {errors.workType && <span className="field-error" id="workType-error" aria-live="polite">{errors.workType}</span>}
             </div>
           </div>
           <div className="form-field">
             <label htmlFor="description">{siteContent.form.description}</label>
-            <textarea id="description" name="description" rows="4" maxLength={1000} placeholder={siteContent.form.descriptionPlaceholder} value={values.description} onChange={updateValue} {...errorProps('description')} />
-            {errors.description && <span className="field-error" id="description-error">{errors.description}</span>}
+            <textarea ref={(element) => { fieldRefs.current.description = element }} id="description" name="description" rows="4" maxLength={1000} placeholder={siteContent.form.descriptionPlaceholder} value={values.description} onChange={updateValue} {...errorProps('description')} />
+            {errors.description && <span className="field-error" id="description-error" aria-live="polite">{errors.description}</span>}
             <span className="character-count">{values.description.length} / 1,000</span>
           </div>
           <div className="form-submit-row">
-            <button className="button button-primary" type="submit">{siteContent.form.submit}<ArrowIcon /></button>
+            <button className="button button-primary" type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
+              {isSubmitting ? siteContent.form.sending : siteContent.form.submit}<ArrowIcon />
+            </button>
             <span>{siteContent.form.requiredNote}</span>
           </div>
-          {submitted && <p className="form-success" role="status">{siteContent.form.success}</p>}
+          {feedback?.type === 'success' && <p className="form-success" role="status" aria-live="polite">{siteContent.form.success}</p>}
+          {feedback?.type === 'rateLimited' && <p className="form-message-error" role="alert" aria-live="assertive">{siteContent.form.rateLimited}</p>}
+          {feedback?.type === 'generalError' && (
+            <p className="form-message-error" role="alert" aria-live="assertive">
+              {siteContent.form.generalError}{' '}
+              <a href={siteContent.whatsappUrl}>{siteContent.form.whatsappFallback}</a>
+            </p>
+          )}
         </form>
       </div>
     </section>

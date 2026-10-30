@@ -444,6 +444,8 @@ button:disabled { cursor: not-allowed; }
 .form-submit-row { display: flex; flex-direction: column; align-items: flex-start; gap: 0.7rem; margin-top: 0.25rem; }
 .form-submit-row > span { color: var(--muted); font-size: 0.72rem; }
 .form-success { margin: 1rem 0 0; padding: 0.8rem; color: #243b28; background: #e3eddf; border-right: 3px solid #526b49; font-size: 0.86rem; line-height: 1.7; }
+.form-message-error { margin: 1rem 0 0; padding: 0.8rem; color: #76271d; background: #fbede8; border-right: 3px solid #a52f22; font-size: 0.86rem; line-height: 1.7; }
+.form-message-error a { color: #76271d; font-weight: 700; text-underline-offset: 0.15rem; }
 
 .reviews-section { background: var(--paper-deep); }
 .reviews-grid { display: grid; gap: 0.8rem; }

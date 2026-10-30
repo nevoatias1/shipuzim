@@ -38,6 +38,8 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 - Stage 4: replaced the minimal client with Hebrew RTL home, privacy, admin-placeholder, and 404 routes. The responsive design uses CSS-only material gallery tiles and the full services, process, contact, reviews, and footer sections.
 - Centralized all UI business copy/details and explicit `TODO:` placeholders in `client/src/content/siteContent.js`. Added the local-only contact form with server-matching validation, visually hidden honeypot, and no API request.
 - Added React Router DOM 7.18.5, Hebrew font links with local fallbacks, semantic labels, keyboard focus styles, reduced-motion support, and dynamic SEO/Open Graph values.
+- Stage 5: connected the contact form to `POST /api/contact` through `client/src/api/contact.js`, using `VITE_API_URL` or the Vite `/api` proxy when empty. The form sends all supported fields including the honeypot, prevents duplicate submission, announces status/errors, focuses invalid fields, maps validation and rate-limit responses, and provides WhatsApp fallback for general failures.
+- Renamed client package metadata and package lock names to `shipuzim`; added `client/.env.example` and documented the API URL setting.
 
 ## Decisions
 
@@ -60,7 +62,8 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 - Stage 3: all 27 tests passed with 0 failures/errors/skips, including all 18 prior tests. `.\mvnw.cmd test` encountered the environment's unwritable default cache; `.\mvnw.cmd -s target\verify-settings.xml test` passed using the workspace-local cache and permitted Maven Central downloads.
 - Reference hashes remained unchanged. All 14 copied classes were compared against the original after only the documented transformations; V2's table definition matches the original exactly. No reference project was built.
 - Stage 4: `npm.cmd run lint` and `npm.cmd run build` passed with React Router DOM 7.18.5 installed. The Vite dev root returned HTTP 200; the source has no API calls. Client/docs were checked for UTF-8 without BOM.
+- Stage 5: `npm.cmd run lint` and `npm.cmd run build` passed. Client source, env example, package metadata, and project state were checked for UTF-8 without BOM.
 
 ## Next step
 
-Stage 5: connect the contact form to POST /api/contact
+Stage 6: admin screen — requests + gallery uploads
