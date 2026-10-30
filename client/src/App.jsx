@@ -1,5 +1,377 @@
+import { useState } from 'react'
+import { Link, Route, Routes } from 'react-router-dom'
+import siteContent from './content/siteContent.js'
+
+const phonePattern = /^(?:0|\+972)[ -]?(?:5\d(?:[ -]?\d){7}|[23489](?:[ -]?\d){7})$/
+
+function ArrowIcon({ diagonal = false }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="icon-arrow">
+      {diagonal
+        ? <path d="M7 17 17 7M8 7h9v9" />
+        : <path d="M19 12H5m0 0 6 6m-6-6 6-6" />}
+    </svg>
+  )
+}
+
+function WhatsAppIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="icon-whatsapp">
+      <path d="M20.4 11.8a8.4 8.4 0 0 1-12.4 7.4L4 20l.9-3.8a8.4 8.4 0 1 1 15.5-4.4Z" />
+      <path d="M9 8.2c.2-.5.4-.5.7-.5h.5c.2 0 .4.1.5.4l.8 1.8c.1.3.1.4-.1.6l-.6.7c-.2.2-.2.3-.1.5.4.7 1.1 1.4 1.8 1.8.2.1.4.1.5-.1l.7-.8c.2-.2.3-.2.6-.1l1.7.8c.3.1.4.3.4.5 0 .3-.2 1.1-.7 1.5-.5.5-1.2.7-1.9.6-1.1-.2-2.4-.9-3.7-2-1.2-1.1-2.1-2.5-2.3-3.6-.2-.7.1-1.4.6-2.1Z" />
+    </svg>
+  )
+}
+
+function SiteHeader() {
+  return (
+    <header className="site-header">
+      <div className="header-main wrap">
+        <Link className="wordmark" to="/" aria-label={siteContent.business.name}>
+          <span className="wordmark-symbol" aria-hidden="true">{siteContent.business.mark}</span>
+          <span>{siteContent.business.name}</span>
+        </Link>
+        <a className="button button-small header-cta" href="#contact">
+          {siteContent.headerCta}
+          <ArrowIcon />
+        </a>
+      </div>
+      <nav className="site-nav wrap" aria-label={siteContent.accessibility.mainNavigation}>
+        {siteContent.navigation.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
+      </nav>
+    </header>
+  )
+}
+
+function SectionHeading({ id, eyebrow, title, intro, light = false }) {
+  return (
+    <div className={`section-heading${light ? ' section-heading-light' : ''}`}>
+      <p className="eyebrow"><span aria-hidden="true" />{eyebrow}</p>
+      <h2 id={id}>{title}</h2>
+      {intro && <p className="section-intro">{intro}</p>}
+    </div>
+  )
+}
+
+function Hero() {
+  return (
+    <section className="hero" aria-labelledby="hero-title">
+      <div className="hero-layout wrap">
+        <div className="hero-copy">
+          <p className="eyebrow"><span aria-hidden="true" />{siteContent.hero.eyebrow}</p>
+          <h1 id="hero-title">{siteContent.hero.title.split('\n').map((line) => <span key={line}>{line}</span>)}</h1>
+          <p className="hero-description">{siteContent.hero.description}</p>
+          <div className="hero-actions">
+            <a className="button button-primary" href="#contact">{siteContent.hero.primaryCta}<ArrowIcon /></a>
+            <a className="button button-text" href={siteContent.whatsappUrl} target="_blank" rel="noreferrer">
+              <WhatsAppIcon />{siteContent.hero.secondaryCta}
+            </a>
+          </div>
+          <p className="hero-note"><span aria-hidden="true">✳</span>{siteContent.hero.note}</p>
+        </div>
+        <div className="hero-art" aria-label={siteContent.hero.artLabel} role="img">
+          <span className="art-sun" />
+          <span className="art-wall art-wall-stone" />
+          <span className="art-wall art-wall-wood" />
+          <span className="art-plinth" />
+          <span className="art-caption">{siteContent.hero.artCaption}</span>
+          <span className="art-stamp" aria-hidden="true">{siteContent.business.mark}</span>
+        </div>
+      </div>
+      <a className="hero-scroll" href="#services"><span aria-hidden="true" />{siteContent.hero.scrollLabel}</a>
+    </section>
+  )
+}
+
+function Services() {
+  return (
+    <section className="section services-section" id="services" aria-labelledby="services-title">
+      <div className="wrap">
+        <SectionHeading id="services-title" {...siteContent.services} />
+        <div className="services-grid">
+          {siteContent.services.items.map((service) => (
+            <article className="service-card" key={service.number}>
+              <div className="service-card-top"><span className="service-number">{service.number}</span><span className="service-mark" aria-hidden="true">↙</span></div>
+              <h3>{service.title}</h3>
+              <p>{service.description}</p>
+              <a className="text-link" href="#contact" aria-label={`${siteContent.services.cardCta} ${service.title}`}>
+                {siteContent.services.cardCta}<ArrowIcon />
+              </a>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Gallery() {
+  return (
+    <section className="section gallery-section" id="gallery" aria-labelledby="gallery-title">
+      <div className="wrap">
+        <div className="gallery-heading-row">
+          <SectionHeading id="gallery-title" {...siteContent.gallery} />
+          <span className="gallery-count" aria-label={siteContent.gallery.countLabel}>
+            <span>0{siteContent.gallery.items.length}</span> / {siteContent.gallery.countTotal}
+          </span>
+        </div>
+        <div className="gallery-grid">
+          {siteContent.gallery.items.map((item, index) => (
+            <article className={`gallery-tile gallery-tile-${item.tone}`} key={item.id}>
+              <div className="material-art" role="img" aria-label={item.label}>
+                <span className="material-shape" />
+                <span className="material-orbit" />
+                <span className="material-number">0{index + 1}</span>
+                <span className="material-label">{siteContent.gallery.tilePlaceholder}</span>
+              </div>
+              <div className="gallery-caption"><h3>{item.label}</h3><span>{item.material}</span></div>
+            </article>
+          ))}
+        </div>
+        <p className="gallery-note"><span aria-hidden="true">✳</span>{siteContent.gallery.note}</p>
+      </div>
+    </section>
+  )
+}
+
+function Process() {
+  return (
+    <section className="section process-section" id="process" aria-labelledby="process-title">
+      <div className="wrap process-layout">
+        <SectionHeading id="process-title" {...siteContent.process} />
+        <ol className="process-list">
+          {siteContent.process.steps.map((step) => (
+            <li className="process-step" key={step.number}>
+              <span className="process-number">{step.number}</span>
+              <div><h3>{step.title}</h3><p>{step.description}</p></div>
+              <ArrowIcon diagonal />
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  )
+}
+
+function ContactForm() {
+  const [values, setValues] = useState({ fullName: '', phone: '', city: '', workType: '', description: '', website: '' })
+  const [errors, setErrors] = useState({})
+  const [submitted, setSubmitted] = useState(false)
+
+  function updateValue(event) {
+    const { name, value } = event.target
+    setValues((current) => ({ ...current, [name]: value }))
+    setErrors((current) => ({ ...current, [name]: '' }))
+    setSubmitted(false)
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    const nextErrors = {}
+    const fullName = values.fullName.trim()
+    if (fullName.length < 2 || fullName.length > 80) nextErrors.fullName = siteContent.form.errors.name
+    if (!phonePattern.test(values.phone.trim())) nextErrors.phone = siteContent.form.errors.phone
+    if (values.city.trim().length > 60) nextErrors.city = siteContent.form.errors.city
+    if (!siteContent.form.workTypes.some((option) => option.value === values.workType)) nextErrors.workType = siteContent.form.errors.workType
+    if (values.description.length > 1000) nextErrors.description = siteContent.form.errors.description
+    setErrors(nextErrors)
+    if (Object.keys(nextErrors).length === 0) setSubmitted(true)
+  }
+
+  function errorProps(name) {
+    return errors[name]
+      ? { 'aria-invalid': 'true', 'aria-describedby': `${name}-error` }
+      : { 'aria-invalid': 'false' }
+  }
+
+  return (
+    <section className="section contact-section" id="contact" aria-labelledby="contact-title">
+      <div className="contact-decoration" aria-hidden="true"><span /><span /><span /></div>
+      <div className="wrap contact-layout">
+        <div className="contact-intro">
+          <SectionHeading id="contact-title" {...siteContent.form} light />
+          <p className="contact-aside"><span aria-hidden="true">✳</span>{siteContent.form.privacyNote}</p>
+          <div className="contact-aside-line" />
+          <p className="contact-aside-small">{siteContent.form.responseNote}</p>
+        </div>
+        <form className="contact-form" onSubmit={handleSubmit} noValidate>
+          <div className="honeypot" aria-hidden="true">
+            <label htmlFor="website">{siteContent.form.honeypot}</label>
+            <input id="website" name="website" type="text" aria-hidden="true" tabIndex={-1} autoComplete="off" value={values.website} onChange={updateValue} />
+          </div>
+          <div className="form-row">
+            <div className="form-field">
+              <label htmlFor="fullName">{siteContent.form.fullName}<span aria-hidden="true">*</span></label>
+              <input id="fullName" name="fullName" type="text" autoComplete="name" required placeholder={siteContent.form.fullNamePlaceholder} value={values.fullName} onChange={updateValue} {...errorProps('fullName')} />
+              {errors.fullName && <span className="field-error" id="fullName-error">{errors.fullName}</span>}
+            </div>
+            <div className="form-field">
+              <label htmlFor="phone">{siteContent.form.phone}<span aria-hidden="true">*</span></label>
+              <input id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" required placeholder={siteContent.form.phonePlaceholder} value={values.phone} onChange={updateValue} {...errorProps('phone')} />
+              {errors.phone && <span className="field-error" id="phone-error">{errors.phone}</span>}
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-field">
+              <label htmlFor="city">{siteContent.form.city}</label>
+              <input id="city" name="city" type="text" autoComplete="address-level2" maxLength={60} placeholder={siteContent.form.cityPlaceholder} value={values.city} onChange={updateValue} {...errorProps('city')} />
+              {errors.city && <span className="field-error" id="city-error">{errors.city}</span>}
+            </div>
+            <div className="form-field">
+              <label htmlFor="workType">{siteContent.form.workType}<span aria-hidden="true">*</span></label>
+              <select id="workType" name="workType" required value={values.workType} onChange={updateValue} {...errorProps('workType')}>
+                <option value="">{siteContent.form.workTypePlaceholder}</option>
+                {siteContent.form.workTypes.map((option) => <option value={option.value} key={option.value}>{option.label}</option>)}
+              </select>
+              {errors.workType && <span className="field-error" id="workType-error">{errors.workType}</span>}
+            </div>
+          </div>
+          <div className="form-field">
+            <label htmlFor="description">{siteContent.form.description}</label>
+            <textarea id="description" name="description" rows="4" maxLength={1000} placeholder={siteContent.form.descriptionPlaceholder} value={values.description} onChange={updateValue} {...errorProps('description')} />
+            {errors.description && <span className="field-error" id="description-error">{errors.description}</span>}
+            <span className="character-count">{values.description.length} / 1,000</span>
+          </div>
+          <div className="form-submit-row">
+            <button className="button button-primary" type="submit">{siteContent.form.submit}<ArrowIcon /></button>
+            <span>{siteContent.form.requiredNote}</span>
+          </div>
+          {submitted && <p className="form-success" role="status">{siteContent.form.success}</p>}
+        </form>
+      </div>
+    </section>
+  )
+}
+
+function Reviews() {
+  return (
+    <section className="section reviews-section" id="reviews" aria-labelledby="reviews-title">
+      <div className="wrap">
+        <SectionHeading id="reviews-title" {...siteContent.reviews} />
+        <div className="reviews-grid">
+          {siteContent.reviews.items.map((review) => (
+            <article className="review-card" key={review.id}>
+              <span className="review-stars" aria-label={siteContent.reviews.placeholderLabel}>★★★★★</span>
+              <p>“{review.quote}”</p>
+              <div className="review-author"><span aria-hidden="true">✳</span><span>{review.author}</span></div>
+            </article>
+          ))}
+        </div>
+        <div className="review-connect">
+          <button className="google-review-button" type="button" disabled>
+            <span className="google-mark" aria-hidden="true">G</span>{siteContent.reviews.googleButton}
+          </button>
+          <p>{siteContent.reviews.googleNote}</p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function SiteFooter() {
+  return (
+    <footer className="site-footer">
+      <div className="wrap footer-main">
+        <div className="footer-brand">
+          <Link className="wordmark wordmark-footer" to="/">
+            <span className="wordmark-symbol" aria-hidden="true">{siteContent.business.mark}</span><span>{siteContent.business.name}</span>
+          </Link>
+          <p>{siteContent.footer.message}</p>
+        </div>
+        <div className="footer-column">
+          <h2>{siteContent.footer.contactTitle}</h2>
+          <span className="footer-detail-label">{siteContent.footer.phone}</span>
+          {siteContent.contact.phoneHref
+            ? <a href={`tel:${siteContent.contact.phoneHref}`}>{siteContent.contact.phone}</a>
+            : <span>{siteContent.contact.phone}</span>}
+          <span className="footer-detail-label">{siteContent.footer.email}</span>
+          {siteContent.contact.emailHref
+            ? <a href={`mailto:${siteContent.contact.emailHref}`}>{siteContent.contact.email}</a>
+            : <span>{siteContent.contact.email}</span>}
+          <span className="footer-detail-label">{siteContent.footer.whatsapp}</span>
+          <a href={siteContent.whatsappUrl} target="_blank" rel="noreferrer">{siteContent.contact.whatsappLabel}</a>
+        </div>
+        <div className="footer-column footer-areas">
+          <h2>{siteContent.footer.areas}</h2>
+          <ul>{siteContent.serviceAreas.map((area) => <li key={area}>{area}</li>)}</ul>
+        </div>
+        <div className="footer-column footer-links">
+          <h2>{siteContent.footer.information}</h2>
+          <Link to="/privacy">{siteContent.footer.privacy}</Link>
+          <Link to="/admin">{siteContent.footer.admin}</Link>
+        </div>
+      </div>
+      <div className="footer-bottom wrap">
+        <span>© {new Date().getFullYear()} {siteContent.business.name} · {siteContent.footer.rights}</span>
+        <a href="#top">{siteContent.footer.backToTop}<ArrowIcon diagonal /></a>
+      </div>
+    </footer>
+  )
+}
+
+function WhatsAppFloat() {
+  return (
+    <a className="whatsapp-float" href={siteContent.whatsappUrl} target="_blank" rel="noreferrer" aria-label={siteContent.whatsapp.ariaLabel}>
+      <WhatsAppIcon /><span>{siteContent.whatsapp.floatLabel}</span>
+    </a>
+  )
+}
+
+function HomePage() {
+  return (
+    <>
+      <SiteHeader />
+      <main id="top">
+        <Hero />
+        <Services />
+        <Gallery />
+        <Process />
+        <ContactForm />
+        <Reviews />
+      </main>
+      <SiteFooter />
+      <WhatsAppFloat />
+    </>
+  )
+}
+
+function PlaceholderPage({ page }) {
+  return (
+    <main className="placeholder-page wrap">
+      <Link className="wordmark" to="/"><span className="wordmark-symbol" aria-hidden="true">{siteContent.business.mark}</span><span>{siteContent.business.name}</span></Link>
+      <div className="placeholder-panel">
+        <p className="eyebrow"><span aria-hidden="true" />{siteContent.placeholderEyebrow}</p>
+        <h1>{page.title}</h1>
+        <p>{page.intro}</p>
+        <Link className="button button-primary" to="/">{page.back}<ArrowIcon /></Link>
+      </div>
+    </main>
+  )
+}
+
+function NotFoundPage() {
+  return (
+    <main className="placeholder-page wrap">
+      <Link className="wordmark" to="/"><span className="wordmark-symbol" aria-hidden="true">{siteContent.business.mark}</span><span>{siteContent.business.name}</span></Link>
+      <div className="placeholder-panel">
+        <p className="eyebrow"><span aria-hidden="true" />404</p>
+        <h1>{siteContent.notFoundPage.title}</h1>
+        <p>{siteContent.notFoundPage.intro}</p>
+        <Link className="button button-primary" to="/">{siteContent.notFoundPage.back}<ArrowIcon /></Link>
+      </div>
+    </main>
+  )
+}
+
 function App() {
-  return <main><h1>[BUSINESS NAME]</h1></main>
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/privacy" element={<PlaceholderPage page={siteContent.privacyPage} />} />
+      <Route path="/admin" element={<PlaceholderPage page={siteContent.adminPage} />} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  )
 }
 
 export default App

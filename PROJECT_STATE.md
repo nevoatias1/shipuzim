@@ -2,14 +2,14 @@
 
 ## Identity and goal
 
-[BUSINESS NAME] is a small business website for decorative wall cladding and painting. The site introduces the business and lets visitors send quote requests.
+Shiputzim is a small business website for decorative wall cladding (stone, wood, panels, decorative plaster) and painting. The site introduces the business and lets visitors send quote requests.
 
 ## Stack and versions
 
 - Server: Spring Boot 3.5.16, Java 21, Maven Wrapper 3.3.4 with Maven 3.10.0
 - Persistence: Spring Data JPA, Flyway, H2 (development/test), PostgreSQL (production)
 - Security: Spring Security and JDBC starters managed by Spring Boot, jjwt 0.9.1, jaxb-api 2.3.1
-- Client: React 19.3.1, Vite 8.3.5, @vitejs/plugin-react 6.1.2, JavaScript
+- Client: React 19.3.1, React Router DOM 7.18.5, Vite 8.3.5, @vitejs/plugin-react 6.1.2, JavaScript
 - Node.js 22.13+ and npm are required for Vite 8 and ESLint 10.
 
 ## Structure
@@ -35,6 +35,9 @@
 - Added ADMIN-only paginated newest-first contact listing and status updates, including 404 for a missing request.
 - Extended the bounded IP limiter to `/authenticate` with its own default of 10 attempts per 10 minutes.
 - Added real-JWT integration tests for admin/user/anonymous access, login failures, protected registration, bootstrap idempotency, admin pagination/status, authentication rate limiting, and CORS.
+- Stage 4: replaced the minimal client with Hebrew RTL home, privacy, admin-placeholder, and 404 routes. The responsive design uses CSS-only material gallery tiles and the full services, process, contact, reviews, and footer sections.
+- Centralized all UI business copy/details and explicit `TODO:` placeholders in `client/src/content/siteContent.js`. Added the local-only contact form with server-matching validation, visually hidden honeypot, and no API request.
+- Added React Router DOM 7.18.5, Hebrew font links with local fallbacks, semantic labels, keyboard focus styles, reduced-motion support, and dynamic SEO/Open Graph values.
 
 ## Decisions
 
@@ -56,7 +59,8 @@
 - UTF-8 without BOM, POM XML, Maven Central-only repositories, and removal of explicit H2 dialect settings were checked. Actual SMTP delivery requires configured credentials and addresses; tests use mocks and send no real mail.
 - Stage 3: all 27 tests passed with 0 failures/errors/skips, including all 18 prior tests. `.\mvnw.cmd test` encountered the environment's unwritable default cache; `.\mvnw.cmd -s target\verify-settings.xml test` passed using the workspace-local cache and permitted Maven Central downloads.
 - Reference hashes remained unchanged. All 14 copied classes were compared against the original after only the documented transformations; V2's table definition matches the original exactly. No reference project was built.
+- Stage 4: `npm.cmd run lint` and `npm.cmd run build` passed with React Router DOM 7.18.5 installed. The Vite dev root returned HTTP 200; the source has no API calls. Client/docs were checked for UTF-8 without BOM.
 
 ## Next step
 
-Stage 4: client pages and design
+Stage 5: connect the contact form to POST /api/contact

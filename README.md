@@ -1,6 +1,10 @@
-# [BUSINESS NAME] website
+# Shiputzim website
 
 A small business website for decorative wall cladding and painting. The repository has a React client and a Spring Boot API; the contact API stores quote requests.
+
+The client is Hebrew and right-to-left. Its Stage 4 pages and copy are in `client/src`; business text and contact placeholders are centralized in `client/src/content/siteContent.js`. Current client routes are `/`, `/privacy`, `/admin` (placeholder), and a 404. The contact form is UI-only and does not call the API yet.
+
+Run the client checks from `client/` with `npm run lint` and `npm run build`. React Router DOM is installed as the only additional client library. Before replacing any `TODO:` values, confirm the service areas, phone, WhatsApp number, email, response-time promise, privacy notice, actual portfolio images, and authorized customer review text. Gallery tiles are CSS placeholders; the array in `siteContent.js` is the handoff point for a future image source.
 
 ## Prerequisites
 
