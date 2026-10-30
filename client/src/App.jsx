@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
 import siteContent from './content/siteContent.js'
 
@@ -24,8 +24,44 @@ function WhatsAppIcon() {
 }
 
 function SiteHeader() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const headerRef = useRef(null)
+  const menuButtonRef = useRef(null)
+
+  useEffect(() => {
+    if (!menuOpen) return undefined
+
+    function closeOnEscape(event) {
+      if (event.key === 'Escape') {
+        setMenuOpen(false)
+        menuButtonRef.current?.focus()
+      }
+    }
+
+    function closeOnOutsideClick(event) {
+      if (!headerRef.current?.contains(event.target)) setMenuOpen(false)
+    }
+
+    function closeOnDesktopResize() {
+      if (window.innerWidth >= 900) setMenuOpen(false)
+    }
+
+    document.addEventListener('keydown', closeOnEscape)
+    document.addEventListener('pointerdown', closeOnOutsideClick)
+    window.addEventListener('resize', closeOnDesktopResize)
+    return () => {
+      document.removeEventListener('keydown', closeOnEscape)
+      document.removeEventListener('pointerdown', closeOnOutsideClick)
+      window.removeEventListener('resize', closeOnDesktopResize)
+    }
+  }, [menuOpen])
+
+  function closeMenu() {
+    setMenuOpen(false)
+  }
+
   return (
-    <header className="site-header">
+    <header className="site-header" ref={headerRef}>
       <div className="header-main wrap">
         <Link className="wordmark" to="/" aria-label={siteContent.business.name}>
           <span className="wordmark-symbol" aria-hidden="true">{siteContent.business.mark}</span>
@@ -35,9 +71,24 @@ function SiteHeader() {
           {siteContent.headerCta}
           <ArrowIcon />
         </a>
+        <button
+          className="mobile-menu-toggle"
+          type="button"
+          aria-expanded={menuOpen}
+          aria-controls="main-navigation"
+          aria-label={menuOpen ? 'סגירת תפריט' : 'פתיחת תפריט'}
+          onClick={() => setMenuOpen((open) => !open)}
+          ref={menuButtonRef}
+        >
+          {menuOpen ? '✕' : '☰'}
+        </button>
       </div>
-      <nav className="site-nav wrap" aria-label={siteContent.accessibility.mainNavigation}>
-        {siteContent.navigation.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
+      <nav id="main-navigation" className={`site-nav wrap${menuOpen ? ' is-open' : ''}`} aria-label={siteContent.accessibility.mainNavigation}>
+        {siteContent.navigation.map((item) => <a key={item.href} href={item.href} onClick={closeMenu}>{item.label}</a>)}
+        <a className="button button-small button-primary mobile-menu-cta" href="#contact" onClick={closeMenu}>
+          {siteContent.headerCta}
+          <ArrowIcon />
+        </a>
       </nav>
     </header>
   )
