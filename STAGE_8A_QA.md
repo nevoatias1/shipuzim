@@ -16,7 +16,6 @@ Date: 2026-10-31. Scope: `client/` and `server/`; no git commands, commits, push
 
 ### High — resolve before launch
 
-- **Personal data remains in lecturer-base stdout logging.** `server/src/main/java/com/site/server/security/CustomUserDetailsService.java:31` prints usernames and roles. `security/JwtRequestFilter.java:75` prints authentication exception messages, and `repository/UserRepository.java:30,41` prints raw database exception messages. These cannot be suppressed with ordinary logging-level settings because they use `System.out`. Left untouched under the explicit lecturer-base constraint; this means the no-personal-data-in-logs requirement is not fully met.
 - **Business/contact content is still placeholder data.** `client/src/content/siteContent.js` contains TODO phone/email/service areas/response time, and WhatsApp targets `972000000000`. Real business details must be supplied before launch. Fallback review cards also retain clearly marked TODO content.
 
 ### Medium
@@ -26,7 +25,7 @@ Date: 2026-10-31. Scope: `client/` and `server/`; no git commands, commits, push
 
 ### Verification still required before launch
 
-- Stage 8b: verify PostgreSQL connectivity, Flyway V1–V4, schema validation, persistence and representative API flows against PostgreSQL. This stage used H2 integration tests and isolated production configuration tests, without connecting to a production database.
+- Stage 8b: PostgreSQL 17 Testcontainers integration verification passed on the user's Docker-enabled machine. See `STAGE_8B_POSTGRES.md`.
 - Real Google login/authorized origins, Cloudinary upload/delete/CDN behavior, SMTP delivery and production hosting routing remain environment checks. Browser QA used mocked API data, blocked external requests, and fallback fonts; no live submissions, uploads, login or deletions were made. Real-device/screen-reader checks remain useful; automated axe results are not a complete accessibility certification.
 - Launch with **only** `SPRING_PROFILES_ACTIVE=prod`, an independent JWT secret, PostgreSQL environment settings, exact CORS origin, and Cloudinary credentials. Dev remains the default when no profile is selected. Production defaults to Cloudinary, while an explicit `GALLERY_STORAGE=local` override is still permitted by the existing architecture; do not carry that override or the public development JWT key into production. Google sign-in deliberately remains unavailable (503) until its client ID is configured.
 
@@ -47,4 +46,6 @@ Date: 2026-10-31. Scope: `client/` and `server/`; no git commands, commits, push
 
 Local disposable evidence is in `server/target/stage8a-tests.log`, `stage8a-browser.cjs`, `stage8a-browser.json`, `stage8a-browser.log`, and the 360px home/admin PNGs. axe-core was installed only under `server/target/qa-tools`; project dependencies and lockfiles were not changed.
 
-Next: **Stage 8b: Postgres verification**, then **Stage 9: deploy**. Deployment remains outside this task's authorization.
+Stage 8b PostgreSQL verification subsequently passed on the user's Docker-enabled machine; see `STAGE_8B_POSTGRES.md`. The lecturer-base logging exception was subsequently resolved by removing only the specified debug print lines; see `PROJECT_STATE.md`.
+
+Next: **Stage 9: deploy**. Deployment is prohibited by the workspace instructions.

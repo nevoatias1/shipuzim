@@ -1,5 +1,7 @@
 # Shiputzim website
 
+Deployment preparation for Render Frankfurt, Neon PostgreSQL and Cloudinary is documented in [DEPLOY.md](DEPLOY.md). The Blueprint and Dockerfile are prepared locally; deployments are performed manually by the project owner under the workspace rules.
+
 A small business website for decorative wall cladding and painting. The repository has a React client and a Spring Boot API; the contact API stores quote requests.
 
 The client is Hebrew and right-to-left. Its pages and copy are in `client/src`; business text and contact placeholders are centralized in `client/src/content/siteContent.js`. Current client routes are `/`, `/privacy`, `/admin`, and a 404. The contact form sends quote requests to the API. The home gallery loads real work images, with category filters and an accessible enlarged-image dialog; the original material placeholders remain when the gallery is empty or unavailable.

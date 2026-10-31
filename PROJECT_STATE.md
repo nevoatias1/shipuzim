@@ -21,7 +21,14 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 
 ## Done
 
+- Stage 9a: prepared `server/Dockerfile` and `.dockerignore`, production PORT/Hikari settings (maximum 5, minimum idle 0, idle timeout 60000ms), root `render.yaml` for a Frankfurt Starter Docker API and CDN static site, and beginner `DEPLOY.md` for external Neon/Cloudinary plus every deployment environment variable. The Blueprint has no database block, uses `sync: false` for secrets/account-specific configuration, and disables automatic deploys. No deployment or cloud-resource creation was performed.
+- Stage 9a client builds inject a robots noindex tag into HTML unless `VITE_SITE_LIVE` is exactly `true`. The existing admin tag preserves noindex on `/admin` when live; robots.txt still disallows `/admin`. Static build is `npm ci && npm run build`, publishing `dist` with the SPA rewrite. Added the live flag to the client env example and production connection variables to the root env example.
+
 - Stage 8a: completed client/server pre-launch QA and recorded findings in `STAGE_8A_QA.md`. Added favicon/robots.txt, route titles and an app error boundary; fixed the hamburger touch target, dialog Tab focus, secondary-text contrast, landmark placement and admin review heading order. Production now requires an exact nonblank CORS origin and explicitly disables framework error detail/stack-trace exposure. No lecturer-base/reference edits or dependency changes.
+
+- Stage 8b: PostgreSQL verification passed on the user's Docker-enabled machine: `.\mvnw.cmd test` reported 66 tests, 0 failures/errors/skips, including `PostgresMigrationIT` against PostgreSQL 17. Locally, the same suite reports 66 tests, 0 failures/errors, 1 skip because Docker is unavailable. The test verifies V1–V4 and Hibernate schema validation, contact/gallery persistence, lecturer UserRepository registration/loading, and review cascade deletion. Testcontainers test dependencies use Spring Boot-managed versions; Surefire includes `*IT` in the normal test phase.
+
+- Lecturer-base deviation after Stage 8b: removed only `System.out.println` debug statements printing usernames/roles or exception messages from copied `CustomUserDetailsService`, `UserRepository`, and `JwtRequestFilter`. No other changes were made to those classes.
 
 - Stage 7b: connected the home reviews section to public pagination/statistics, with Hebrew dates, accessible stars, plain-text content, load more, and placeholder fallback for empty/failed requests. Added Google's official Hebrew sign-in button and a lazy shared Identity Services loader triggered within 400px of the section. Missing client ID shows a disabled button; blocked scripts, sign-in conflicts/rate limits, and user-session expiry have Hebrew feedback.
 - Added separate sessionStorage-only user authentication, JWT-owned review loading/create/edit/delete with native rating radios, 500-character counter, validation/focus/live feedback, duplicate-submit prevention, and deletion confirmation. Public lists/statistics refresh after own changes. Added a third keyboard-accessible admin reviews tab with author emails, pagination, and confirmed deletion.
@@ -63,6 +70,9 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 
 ## Decisions
 
+- Deployment target: Render API in Frankfurt with Neon PostgreSQL in AWS eu-central-1 and Cloudinary image storage; client is a Render static site. Production reads Render's PORT (fallback 8080), and Hikari can release every idle connection so Neon can suspend when inactive. Mail remains disabled unless explicitly configured. The runtime image uses Eclipse Temurin 21 JRE, a non-root app user, prod profile, and `JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=75` for the 512 MB target.
+- Stage 9a sets `VITE_SITE_LIVE=false` in the Blueprint. All VITE variables are public build inputs; changing indexing mode, API URL or Google ID requires rebuilding the client. Admin noindex remains route-specific in live mode. `DEPLOY.md` documents manual URL wiring, Google origins, first-admin creation/removal of ADMIN_* variables, and the launch checklist. AGENTS.md still prohibits agent deployment.
+
 - Phone numbers are stored as digits in local Israeli format beginning with `0`; `+972` inputs are converted to this format.
 - Optional blank email, city, and description values are stored as null.
 - Database timestamps are set by the server in UTC.
@@ -90,9 +100,14 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 
 ## Verification
 
+- Stage 9a: `.\mvnw.cmd test` passed **66 tests, 0 failures, 0 errors, 0 skips**, including `PostgresMigrationIT` against disposable Docker PostgreSQL. Verification used the workspace Maven cache and a workspace Java temp directory with permitted local Docker access. `npm.cmd run lint` and `npm.cmd run build` passed. The server Docker build passed with tests skipped during image packaging; local image inspection confirmed `User=app`, prod profile and the 75% heap flag. Server/client source and storage remain separate.
+- Stage 9a: `render.yaml` passed local validation against Render's official JSON schema, including service roots, Frankfurt/Starter API, no database block, exact static rewrite and secret placeholders; every Blueprint env variable is covered in `DEPLOY.md`. Pre-launch and live builds passed 12 Chromium checks across home/privacy/admin/404 and admin-to-home navigation, verifying HTML noindex, route cleanup and robots.txt. A separate `VITE_SITE_LIVE=TRUE` build retained noindex, confirming only exact lowercase `true` enables indexing. Changed text files were checked for UTF-8 without BOM. No git commands or deployment.
+
 - Stage 8a: 65 server tests passed (0 failures/errors/skips), including CORS and isolated production-profile checks, using `.\mvnw.cmd -o "-Dmaven.repo.local=target/m2" test` with permitted cache/classpath access. Plain `.\mvnw.cmd test` encountered the known unwritable default cache; restricted execution also failed to discover migration resources, resolved by the permitted run. `npm.cmd run lint` and `npm.cmd run build` passed. Chromium checked home/privacy/admin/404, gallery dialog, own review and all admin panels at 320/360/390/412/768px with no document overflow, including reserved scrollbar space; 46 axe snapshots had zero violations. Menu/dialog/tab/rating keyboard interactions, route metadata/noindex cleanup, assets, placeholders and error-boundary recovery passed. npm audit reports six moderate development-tool findings without a non-breaking fix; production-only audit reports zero. Changed source/config/docs are UTF-8 without BOM. No git commands, real external mutations or deployment.
 
-- Stage 8a open findings: lecturer-base stdout still logs usernames/roles and raw exception messages (high; unchanged under the base-preservation instruction); business contact/WhatsApp/service-area placeholders remain (high); privacy wording/removal contact/retention remain draft and six moderate development-tool audit findings remain. PostgreSQL and real Google/Cloudinary/SMTP/hosting verification remain before launch. Full severity/evidence details: `STAGE_8A_QA.md`.
+- Stage 8a open findings: business contact/WhatsApp/service-area placeholders remain (high); privacy wording/removal contact/retention remain draft and six moderate development-tool audit findings remain. Real Google/Cloudinary/SMTP/hosting checks remain launch tasks. PostgreSQL is verified on the user's Docker-enabled machine (Stage 8b).
+
+- Stage 8b PostgreSQL result and local Docker-unavailable test summary are recorded in `STAGE_8B_POSTGRES.md`.
 
 - Stage 7b: `npm.cmd run lint` and `npm.cmd run build` passed. Isolated Chromium checks with mocked Google/API responses verified deferred script loading, Hebrew button configuration, 409/429 feedback, session separation and no localStorage tokens, own-review validation/save/prefill/delete/401, duplicate prevention, plain-text HTML handling, load more, empty/error fallback, admin tab keyboard navigation/deletion, privacy draft, and missing-client-ID fallback. Home form, admin reviews, and privacy had no document overflow at 320/360/390/412/768/1200px. No real Google login, API submissions, or deletions were performed. Source/config/docs checked for UTF-8 without BOM; no dependencies, server/reference changes, or git commands.
 
@@ -112,4 +127,4 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 
 ## Next step
 
-Stage 8b: Postgres verification, then Stage 9: deploy.
+Stage 9b: manual deploy.
