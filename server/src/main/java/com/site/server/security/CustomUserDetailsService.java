@@ -28,8 +28,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         // Log the retrieved user
-        System.out.println("Retrieved user: " + user.getUsername() + " with roles: " + user.getRole().name());
-
         // Convert user roles to GrantedAuthorities
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(user.getRole().name())); // Assuming role is enum

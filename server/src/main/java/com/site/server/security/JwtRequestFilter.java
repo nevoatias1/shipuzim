@@ -72,7 +72,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     return;
                 }
             } catch (Exception e) {
-                System.out.println("Authentication failed: " + e.getMessage());
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed");
                 return;
             }

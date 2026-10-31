@@ -27,7 +27,6 @@ public class UserRepository {
             CustomUser user = jdbcTemplate.queryForObject(sql, new UserMapper(), username);
             return user;
         } catch (Exception e){
-            System.out.println(e.getMessage());
             return null;
         }
     }
@@ -38,7 +37,6 @@ public class UserRepository {
             CustomUser user = jdbcTemplate.queryForObject(sql, new UserMapper(), email);
             return user;
         } catch (Exception e){
-            System.out.println(e.getMessage());
             return null;
         }
     }
