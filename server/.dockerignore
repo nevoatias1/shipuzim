@@ -1,0 +1,9 @@
+target
+data
+uploads
+.env*
+**/.env*
+.git
+.idea
+.vscode
+*.log

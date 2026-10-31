@@ -25,6 +25,7 @@ class ProductionProfileTest {
     void productionUsesExternalStorageAndDatabaseAndDisablesErrorDetails() {
         // Synthetic test-only key; never used to sign real tokens.
         production.withPropertyValues("CORS_ALLOWED_ORIGIN=https://example.invalid",
+                        "PORT=10000",
                         "JWT_SECRET=" + Base64.getEncoder().encodeToString(new byte[32]))
                 .withUserConfiguration(CorsConfig.class, JwtSecretValidation.class).run(context -> {
                     assertThat(context).hasNotFailed();
@@ -33,6 +34,10 @@ class ProductionProfileTest {
                     assertThat(environment.getProperty("app.cors.allowed-origin")).isEqualTo("https://example.invalid");
                     assertThat(environment.getProperty("app.gallery.storage")).isEqualTo("cloudinary");
                     assertThat(environment.getProperty("spring.datasource.driver-class-name")).isEqualTo("org.postgresql.Driver");
+                    assertThat(environment.getProperty("server.port")).isEqualTo("10000");
+                    assertThat(environment.getProperty("spring.datasource.hikari.maximum-pool-size")).isEqualTo("5");
+                    assertThat(environment.getProperty("spring.datasource.hikari.minimum-idle")).isEqualTo("0");
+                    assertThat(environment.getProperty("spring.datasource.hikari.idle-timeout")).isEqualTo("60000");
                     for (String property : new String[]{"spring.datasource.url", "spring.datasource.username", "spring.datasource.password"}) {
                         assertThatThrownBy(() -> environment.getProperty(property)).isInstanceOf(IllegalArgumentException.class);
                     }
