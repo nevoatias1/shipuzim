@@ -78,7 +78,7 @@ The admin gallery editor uses authenticated `GET /admin/gallery` to prefill capt
 - `GET /admin/contact-requests?page=0&size=20` returns newest requests first in the stable DTO `{items: [...], page, size, totalElements, totalPages}`; the default page size is 20. Each item has `id`, `fullName`, `phone`, `email`, `city`, `workType`, `description`, `status`, and `createdAt`.
 - `PUT /admin/contact-requests/{id}/status` accepts `{"status":"NEW"}` or `{"status":"HANDLED"}` and returns 204; a missing request returns 404.
 
-Both admin endpoints require ADMIN authority. `/users/register` requires ADMIN authority through an explicit matcher placed before the broader `/users/**` rule; USER tokens, including Google users, cannot register accounts or choose ADMIN roles. `/authenticate`, `/api/contact`, and `/api/health` remain public. The base still permits the disabled `/h2-console/**` path. `spring.main.allow-circular-references=true` is retained as required by the base.
+Both admin endpoints require ADMIN authority. `/users/register` requires authentication under the base's unchanged `/users/**` rule. `/authenticate`, `/api/contact`, and `/api/health` remain public. The base still permits the disabled `/h2-console/**` path. `spring.main.allow-circular-references=true` is retained as required by the base.
 
 The existing `CorsConfig` now covers authentication and admin paths as well as `/api/**`, using `CORS_ALLOWED_ORIGIN` and allowing Authorization, Content-Type, PUT, and DELETE. The base CORS override and its two hard-coded controller `@CrossOrigin` annotations were removed so this is the single CORS configuration.
 
