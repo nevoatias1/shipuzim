@@ -32,7 +32,7 @@ function ImageDialog({ image, onClose }) {
     <dialog className="image-dialog" ref={dialog} aria-labelledby="gallery-dialog-title" onClose={onClose} onClick={closeOnBackdrop} onKeyDown={keepDialogFocus}>
       <button className="dialog-close" type="button" onClick={() => dialog.current.close()} aria-label={siteContent.gallery.close}>✕</button>
       {image && <>
-        <img src={imageUrl(image.imageUrl)} alt={image.caption || siteContent.gallery.imageFallback} />
+        <img src={imageUrl(image.imageUrl, 1600)} alt={image.caption || siteContent.gallery.imageFallback} />
         <h2 id="gallery-dialog-title">{image.caption || siteContent.gallery.imageFallback}</h2>
       </>}
     </dialog>

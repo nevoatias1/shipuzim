@@ -4,9 +4,16 @@ export function apiUrl(path) {
   return `${baseUrl}/${path.replace(/^\/+/, '')}`
 }
 
-export function imageUrl(url) {
+export function imageUrl(url, width = 800) {
   if (!url) return ''
-  return /^(?:https?:)?\/\//i.test(url) ? url : apiUrl(url)
+  const resolved = /^(?:https?:)?\/\//i.test(url) ? url : apiUrl(url)
+  try {
+    const parsed = new URL(resolved.startsWith('//') ? `https:${resolved}` : resolved)
+    if (parsed.hostname === 'res.cloudinary.com' && parsed.pathname.includes('/upload/')) {
+      return resolved.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`)
+    }
+  } catch { /* Relative and malformed URLs retain the existing URL handling. */ }
+  return resolved
 }
 
 export async function readBody(response) {

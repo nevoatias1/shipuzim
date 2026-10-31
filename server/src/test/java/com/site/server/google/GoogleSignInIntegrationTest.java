@@ -68,6 +68,12 @@ class GoogleSignInIntegrationTest {
                 user.getUsername())).isEqualTo(1);
         assertThat(users.getUserByUsername(user.getUsername()).getPassword()).isEqualTo(password);
         mvc.perform(get("/admin/reviews").header("Authorization", "Bearer " + token)).andExpect(status().isForbidden());
+        mvc.perform(post("/users/register").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Map.of(
+                                "first_name", "Test", "last_name", "Escalation", "email", "escalation@example.test",
+                                "username", "google-admin-escalation", "password", "synthetic-test-password", "role", "ADMIN"))))
+                .andExpect(status().isForbidden());
+        assertThat(users.getUserByUsername("google-admin-escalation")).isNull();
     }
 
     @Test

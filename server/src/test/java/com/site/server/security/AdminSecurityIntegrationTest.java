@@ -10,6 +10,8 @@ import com.site.server.model.CustomUser;
 import com.site.server.model.Role;
 import com.site.server.service.UserService;
 import com.site.server.utils.JwtUtil;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -132,8 +134,36 @@ class AdminSecurityIntegrationTest {
 
     @Test
     void registrationRequiresAToken() throws Exception {
-        mockMvc.perform(post("/users/register").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        String username = "anonymous-registration-" + UUID.randomUUID();
+        mockMvc.perform(post("/users/register").contentType(MediaType.APPLICATION_JSON)
+                        .content(registration(username, "ADMIN")))
                 .andExpect(status().isForbidden());
+        assertThat(users.getUserByUsername(username)).isNull();
+    }
+
+    @Test
+    void registrationRejectsUserTokensEvenWhenTheBodyRequestsAdmin() throws Exception {
+        for (String role : new String[]{"USER", "ADMIN"}) {
+            String username = "user-registration-" + UUID.randomUUID();
+            mockMvc.perform(post("/users/register")
+                            .header("Authorization", token("stage3-test-user"))
+                            .contentType(MediaType.APPLICATION_JSON).content(registration(username, role)))
+                    .andExpect(status().isForbidden());
+            assertThat(users.getUserByUsername(username)).isNull();
+        }
+    }
+
+    @Test
+    void adminTokenCanRegisterANewUser() throws Exception {
+        String username = "admin-registration-" + UUID.randomUUID();
+        mockMvc.perform(post("/users/register")
+                        .header("Authorization", token("stage3-test-admin"))
+                        .contentType(MediaType.APPLICATION_JSON).content(registration(username, "ADMIN")))
+                .andExpect(status().isCreated());
+        CustomUser created = users.getUserByUsername(username);
+        assertThat(created).isNotNull();
+        assertThat(created.getRole()).isEqualTo(Role.ADMIN);
+        assertThat(passwords.matches("synthetic-registration-password", created.getPassword())).isTrue();
     }
 
     @Test
@@ -182,6 +212,12 @@ class AdminSecurityIntegrationTest {
 
     private String token(String username) {
         return "Bearer " + jwt.generateToken(userDetails.loadUserByUsername(username));
+    }
+
+    private String registration(String username, String role) throws Exception {
+        return objectMapper.writeValueAsString(Map.of(
+                "first_name", "Test", "last_name", "Registrant", "email", username + "@example.test",
+                "username", username, "password", "synthetic-registration-password", "role", role));
     }
 
     private MockHttpServletRequestBuilder authenticate(String ip, String password) throws Exception {

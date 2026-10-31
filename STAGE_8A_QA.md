@@ -16,7 +16,7 @@ Date: 2026-10-31. Scope: `client/` and `server/`; no git commands, commits, push
 
 ### High — resolve before launch
 
-- **Business/contact content is still placeholder data.** `client/src/content/siteContent.js` contains TODO phone/email/service areas/response time, and WhatsApp targets `972000000000`. Real business details must be supplied before launch. Fallback review cards also retain clearly marked TODO content.
+- **Business/contact content is still placeholder data.** `client/src/content/siteContent.js` contains TODO phone/email/service areas/response time, and WhatsApp targets `972000000000`. Real business details must be supplied before launch. Review placeholder cards were subsequently removed in the pre-launch security fixes.
 
 ### Medium
 

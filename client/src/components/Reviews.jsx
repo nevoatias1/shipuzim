@@ -56,7 +56,7 @@ export default function Reviews({ children }) {
 
   function signOut() { logoutUser(); setSession(null); setSessionMessage(copy.loggedOut) }
 
-  const placeholders = !list.loading && list.items.length === 0
+  const empty = !list.loading && list.items.length === 0
   return <section className="section reviews-section" id="reviews" ref={section} aria-labelledby="reviews-title">
     <div className="wrap">
       {children}
@@ -69,12 +69,8 @@ export default function Reviews({ children }) {
         <button type="button" className="button button-text" onClick={() => loadPage(query.page)}>{copy.retry}</button></div>}
       <div className="reviews-grid">
         {list.items.map((item) => <ReviewCard key={item.id} item={item} />)}
-        {placeholders && copy.items.map((review) => <article className="review-card" key={review.id}>
-          <span className="review-stars" aria-label={copy.placeholderLabel}>★★★★★</span>
-          <p>“{review.quote}”</p>
-          <div className="review-author"><span aria-hidden="true">✳</span><span>{review.author}</span></div>
-        </article>)}
       </div>
+      {empty && <p className="review-feedback" role="status">{copy.empty}</p>}
       {list.data && list.data.page + 1 < list.data.totalPages && !list.failed && <div className="reviews-more">
         <button type="button" className="button button-text" disabled={list.loading} onClick={() => loadPage(list.data.page + 1)}>{list.loading ? copy.loading : copy.loadMore}</button>
       </div>}

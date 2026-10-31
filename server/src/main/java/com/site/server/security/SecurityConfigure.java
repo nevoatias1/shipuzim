@@ -38,6 +38,7 @@ public class SecurityConfigure implements WebMvcConfigurer {
                         .requestMatchers("/authenticate", "/auth/google", "/api/contact", "/api/health",
                                 "/h2-console/**").permitAll() // Public endpoints
                         .requestMatchers(HttpMethod.GET, "/api/gallery", "/uploads/**", "/api/reviews").permitAll()
+                        .requestMatchers("/users/register").hasAuthority("ADMIN")
                         .requestMatchers("/users/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasAuthority("ADMIN") // Admin-only routes
                         .anyRequest().authenticated() // Require authentication for all other requests

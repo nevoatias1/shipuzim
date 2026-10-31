@@ -1,5 +1,6 @@
 package com.site.server.contact;
 
+import com.site.server.web.ClientIpResolver;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,11 +18,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class ContactRateLimitFilter extends OncePerRequestFilter {
     private final ContactRateLimiter limiter;
     private final ContactRateLimiter authenticationLimiter;
+    private final ClientIpResolver clientIps;
 
     public ContactRateLimitFilter(@Qualifier("contactRateLimiter") ContactRateLimiter limiter,
-            @Qualifier("authenticationRateLimiter") ContactRateLimiter authenticationLimiter) {
+            @Qualifier("authenticationRateLimiter") ContactRateLimiter authenticationLimiter,
+            ClientIpResolver clientIps) {
         this.limiter = limiter;
         this.authenticationLimiter = authenticationLimiter;
+        this.clientIps = clientIps;
     }
 
     @Override
@@ -36,7 +40,7 @@ public class ContactRateLimitFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         ContactRateLimiter selected = request.getRequestURI().equals(request.getContextPath() + "/api/contact")
                 ? limiter : authenticationLimiter;
-        if (!selected.allow(request.getRemoteAddr())) {
+        if (!selected.allow(clientIps.resolve(request))) {
             response.setStatus(429);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.getWriter().write("{\"error\":\"TOO_MANY_REQUESTS\"}");

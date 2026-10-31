@@ -1,6 +1,7 @@
 package com.site.server.review;
 
 import com.site.server.contact.ContactRateLimiter;
+import com.site.server.web.ClientIpResolver;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,9 +18,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Order(Ordered.LOWEST_PRECEDENCE - 9)
 public class ReviewRateLimitFilter extends OncePerRequestFilter {
     private final ContactRateLimiter limiter;
+    private final ClientIpResolver clientIps;
 
-    public ReviewRateLimitFilter(@Qualifier("reviewRateLimiter") ContactRateLimiter limiter) {
+    public ReviewRateLimitFilter(@Qualifier("reviewRateLimiter") ContactRateLimiter limiter, ClientIpResolver clientIps) {
         this.limiter = limiter;
+        this.clientIps = clientIps;
     }
 
     @Override
@@ -32,7 +35,7 @@ public class ReviewRateLimitFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        if (!limiter.allow(request.getRemoteAddr())) {
+        if (!limiter.allow(clientIps.resolve(request))) {
             response.setStatus(429);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.getWriter().write("{\"error\":\"TOO_MANY_REQUESTS\"}");
