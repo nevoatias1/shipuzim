@@ -5,7 +5,7 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   --ink: #332a21;
-  --muted: #74685a;
+  --muted: #6e6255;
   --paper: #f8f4eb;
   --paper-deep: #efe7da;
   --white: #fffdf8;
@@ -110,7 +110,6 @@ button:disabled { cursor: not-allowed; }
 .site-header .header-cta { display: none; }
 
 @media (max-width: 899px) {
-  .header-main > * { min-width: 0; }
   .wordmark { flex: 0 1 auto; min-width: 0; }
 }
 
@@ -389,8 +388,8 @@ button:disabled { cursor: not-allowed; }
 .material-art::after { inset: 0; background: linear-gradient(145deg, rgb(255 255 255 / 20%), transparent 55%, rgb(35 25 16 / 12%)); }
 .material-shape { position: absolute; top: 17%; left: 16%; width: 55%; height: 57%; border: 1px solid rgb(255 255 255 / 54%); border-radius: 48% 48% 2px 2px; box-shadow: 0.65rem 0.7rem 1.1rem rgb(33 26 19 / 16%); transform: rotate(-7deg); }
 .material-orbit { position: absolute; right: 12%; bottom: 19%; width: 2.8rem; height: 2.8rem; border: 1px solid rgb(255 253 248 / 65%); border-radius: 50%; }
-.material-number { position: absolute; top: 0.6rem; right: 0.65rem; color: rgb(255 253 248 / 90%); font-size: 0.7rem; font-weight: 600; }
-.material-label { position: absolute; bottom: 0.6rem; left: 0.55rem; color: #fffdf8; font-size: clamp(0.55rem, 2.4vw, 0.72rem); font-weight: 600; text-shadow: 0 1px 4px rgb(0 0 0 / 45%); }
+.material-number { position: absolute; top: 0.6rem; right: 0.65rem; padding: 0.15rem 0.3rem; color: var(--white); background: var(--olive); font-size: 0.7rem; font-weight: 600; }
+.material-label { position: absolute; bottom: 0.6rem; left: 0.55rem; padding: 0.15rem 0.3rem; color: var(--white); background: var(--ink); font-size: clamp(0.55rem, 2.4vw, 0.72rem); font-weight: 600; }
 .gallery-caption { display: flex; min-width: 0; align-items: baseline; justify-content: space-between; gap: 0.35rem; padding-top: 0.55rem; }
 .gallery-caption h3 { min-width: 0; margin: 0; font-size: 0.83rem; font-weight: 700; overflow-wrap: anywhere; }
 .gallery-caption > span { min-width: 0; color: var(--muted); font-size: 0.65rem; overflow-wrap: anywhere; }

@@ -79,17 +79,14 @@ export default function AdminPage() {
     const existing = document.querySelector('meta[name="robots"]')
     const meta = existing || document.createElement('meta')
     const previous = existing?.getAttribute('content')
-    const previousTitle = document.title
     meta.name = 'robots'
     meta.content = 'noindex'
     if (!existing) document.head.append(meta)
-    document.title = `${copy.title} | ${siteContent.business.name}`
     return () => {
       if (existing) {
         if (previous === null) meta.removeAttribute('content')
         else meta.setAttribute('content', previous)
       } else meta.remove()
-      document.title = previousTitle
     }
   }, [])
 

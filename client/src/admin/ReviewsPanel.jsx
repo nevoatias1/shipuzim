@@ -56,7 +56,7 @@ export default function ReviewsPanel() {
       <button type="button" className="button button-text" onClick={() => loadPage(page)}>{copy.retry}</button></div>}
     {!loading && data && <>
       {data.items.length === 0 ? <p className="admin-empty">{copy.noReviews}</p> : <div className="admin-review-grid">
-        {data.items.map((item) => <ReviewCard key={item.id} item={item}>
+        {data.items.map((item) => <ReviewCard key={item.id} item={item} headingLevel={2}>
           <p className="admin-review-email"><span>{copy.email}: </span><bdi>{item.authorEmail}</bdi></p>
           <button type="button" className="button button-danger" disabled={working} aria-busy={Boolean(pending[item.id])}
             aria-label={`${copy.deleteReview}: ${item.displayName}`} onClick={() => remove(item)}>

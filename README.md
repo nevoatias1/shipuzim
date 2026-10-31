@@ -26,7 +26,7 @@ The default `dev` profile uses an H2 file database at `server/data/contact_reque
 
 The API listens on `http://localhost:8080`. `GET /api/health` returns `{"status":"ok"}`. `POST /api/contact` persists a quote request and returns only its id and creation time.
 
-To run with PostgreSQL, set `SPRING_PROFILES_ACTIVE=prod`, `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` in the environment before starting the server. The production profile has no database credential defaults. `CORS_ALLOWED_ORIGIN` can override the default browser origin (`http://localhost:5173`).
+To run with PostgreSQL, set `SPRING_PROFILES_ACTIVE=prod`, `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` in the environment before starting the server. The production profile has no database credential defaults. Production also requires `CORS_ALLOWED_ORIGIN` as one exact HTTP(S) origin (for example `https://example.com`, without a trailing slash, path, wildcard, query or fragment). Development defaults to `http://localhost:5173`.
 
 ## Contact spam protection
 

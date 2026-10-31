@@ -21,6 +21,8 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 
 ## Done
 
+- Stage 8a: completed client/server pre-launch QA and recorded findings in `STAGE_8A_QA.md`. Added favicon/robots.txt, route titles and an app error boundary; fixed the hamburger touch target, dialog Tab focus, secondary-text contrast, landmark placement and admin review heading order. Production now requires an exact nonblank CORS origin and explicitly disables framework error detail/stack-trace exposure. No lecturer-base/reference edits or dependency changes.
+
 - Stage 7b: connected the home reviews section to public pagination/statistics, with Hebrew dates, accessible stars, plain-text content, load more, and placeholder fallback for empty/failed requests. Added Google's official Hebrew sign-in button and a lazy shared Identity Services loader triggered within 400px of the section. Missing client ID shows a disabled button; blocked scripts, sign-in conflicts/rate limits, and user-session expiry have Hebrew feedback.
 - Added separate sessionStorage-only user authentication, JWT-owned review loading/create/edit/delete with native rating radios, 500-character counter, validation/focus/live feedback, duplicate-submit prevention, and deletion confirmation. Public lists/statistics refresh after own changes. Added a third keyboard-accessible admin reviews tab with author emails, pagination, and confirmed deletion.
 - Added `VITE_GOOGLE_CLIENT_ID` to the client env example, verified `.env.local` is covered by the existing root ignore rule, and added `/auth` and `/users` Vite proxies. Added an explicitly marked draft Google/privacy/removal section. No npm libraries or server changes in Stage 7b.
@@ -88,6 +90,10 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 
 ## Verification
 
+- Stage 8a: 65 server tests passed (0 failures/errors/skips), including CORS and isolated production-profile checks, using `.\mvnw.cmd -o "-Dmaven.repo.local=target/m2" test` with permitted cache/classpath access. Plain `.\mvnw.cmd test` encountered the known unwritable default cache; restricted execution also failed to discover migration resources, resolved by the permitted run. `npm.cmd run lint` and `npm.cmd run build` passed. Chromium checked home/privacy/admin/404, gallery dialog, own review and all admin panels at 320/360/390/412/768px with no document overflow, including reserved scrollbar space; 46 axe snapshots had zero violations. Menu/dialog/tab/rating keyboard interactions, route metadata/noindex cleanup, assets, placeholders and error-boundary recovery passed. npm audit reports six moderate development-tool findings without a non-breaking fix; production-only audit reports zero. Changed source/config/docs are UTF-8 without BOM. No git commands, real external mutations or deployment.
+
+- Stage 8a open findings: lecturer-base stdout still logs usernames/roles and raw exception messages (high; unchanged under the base-preservation instruction); business contact/WhatsApp/service-area placeholders remain (high); privacy wording/removal contact/retention remain draft and six moderate development-tool audit findings remain. PostgreSQL and real Google/Cloudinary/SMTP/hosting verification remain before launch. Full severity/evidence details: `STAGE_8A_QA.md`.
+
 - Stage 7b: `npm.cmd run lint` and `npm.cmd run build` passed. Isolated Chromium checks with mocked Google/API responses verified deferred script loading, Hebrew button configuration, 409/429 feedback, session separation and no localStorage tokens, own-review validation/save/prefill/delete/401, duplicate prevention, plain-text HTML handling, load more, empty/error fallback, admin tab keyboard navigation/deletion, privacy draft, and missing-client-ID fallback. Home form, admin reviews, and privacy had no document overflow at 320/360/390/412/768/1200px. No real Google login, API submissions, or deletions were performed. Source/config/docs checked for UTF-8 without BOM; no dependencies, server/reference changes, or git commands.
 
 - Stage 7a: 61 tests passed, 0 failures/errors/skips (all 43 existing plus 10 Google and 8 review tests). Tests mock the official Google verifier and send no Google network requests; cover USER-only JWTs, identity reuse/bcrypt, role claims, audience/issuer/expiry/unverified/invalid tokens, account conflicts, shared auth limits, own create/edit/delete and ownership, public pagination/statistics/privacy, admin access/deletion, validation/sanitization, cascading deletion, and review write limits. Google dependencies downloaded successfully from Maven Central. Verification used `.\mvnw.cmd -o "-Dmaven.repo.local=target/m2" test` with permitted workspace-cache access after downloads; the default cache remains unwritable in this environment. Server/docs/env changes checked for strict UTF-8 without BOM. Client and reference files were not changed.
@@ -106,4 +112,4 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 
 ## Next step
 
-Stage 8: QA + Postgres check
+Stage 8b: Postgres verification, then Stage 9: deploy.

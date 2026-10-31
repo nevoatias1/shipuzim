@@ -20,8 +20,16 @@ function ImageDialog({ image, onClose }) {
         || event.clientY < bounds.top || event.clientY > bounds.bottom) event.currentTarget.close()
   }
 
+  function keepDialogFocus(event) {
+    // The close button is the dialog's only interactive control.
+    if (event.key === 'Tab') {
+      event.preventDefault()
+      dialog.current.querySelector('button').focus()
+    }
+  }
+
   return (
-    <dialog className="image-dialog" ref={dialog} aria-labelledby="gallery-dialog-title" onClose={onClose} onClick={closeOnBackdrop}>
+    <dialog className="image-dialog" ref={dialog} aria-labelledby="gallery-dialog-title" onClose={onClose} onClick={closeOnBackdrop} onKeyDown={keepDialogFocus}>
       <button className="dialog-close" type="button" onClick={() => dialog.current.close()} aria-label={siteContent.gallery.close}>✕</button>
       {image && <>
         <img src={imageUrl(image.imageUrl)} alt={image.caption || siteContent.gallery.imageFallback} />

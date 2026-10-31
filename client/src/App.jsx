@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, Route, Routes } from 'react-router-dom'
+import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import { submitContactRequest } from './api/contact.js'
 import AdminPage from './admin/AdminPage.jsx'
 import HomeGallery from './components/HomeGallery.jsx'
@@ -387,9 +387,9 @@ function HomePage() {
         <Process />
         <ContactForm />
         <Reviews><SectionHeading id="reviews-title" {...siteContent.reviews} /></Reviews>
+        <WhatsAppFloat />
       </main>
       <SiteFooter />
-      <WhatsAppFloat />
     </>
   )
 }
@@ -430,6 +430,16 @@ function NotFoundPage() {
 }
 
 function App() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    const route = pathname.replace(/\/+$/, '').toLowerCase() || '/'
+    const title = route === '/' ? siteContent.business.tagline
+      : route === '/privacy' ? siteContent.privacyPage.title
+        : route === '/admin' ? siteContent.admin.title : siteContent.notFoundPage.title
+    document.title = `${title} | ${siteContent.business.name}`
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title)
+  }, [pathname])
+
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
