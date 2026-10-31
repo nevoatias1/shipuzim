@@ -3,6 +3,7 @@ import { Link, Route, Routes } from 'react-router-dom'
 import { submitContactRequest } from './api/contact.js'
 import AdminPage from './admin/AdminPage.jsx'
 import HomeGallery from './components/HomeGallery.jsx'
+import Reviews from './components/Reviews.jsx'
 import siteContent from './content/siteContent.js'
 
 const phonePattern = /^(?:0|\+972)[ -]?(?:5\d(?:[ -]?\d){7}|[23489](?:[ -]?\d){7})$/
@@ -326,31 +327,6 @@ function ContactForm() {
   )
 }
 
-function Reviews() {
-  return (
-    <section className="section reviews-section" id="reviews" aria-labelledby="reviews-title">
-      <div className="wrap">
-        <SectionHeading id="reviews-title" {...siteContent.reviews} />
-        <div className="reviews-grid">
-          {siteContent.reviews.items.map((review) => (
-            <article className="review-card" key={review.id}>
-              <span className="review-stars" aria-label={siteContent.reviews.placeholderLabel}>★★★★★</span>
-              <p>“{review.quote}”</p>
-              <div className="review-author"><span aria-hidden="true">✳</span><span>{review.author}</span></div>
-            </article>
-          ))}
-        </div>
-        <div className="review-connect">
-          <button className="google-review-button" type="button" disabled>
-            <span className="google-mark" aria-hidden="true">G</span>{siteContent.reviews.googleButton}
-          </button>
-          <p>{siteContent.reviews.googleNote}</p>
-        </div>
-      </div>
-    </section>
-  )
-}
-
 function SiteFooter() {
   return (
     <footer className="site-footer">
@@ -410,7 +386,7 @@ function HomePage() {
         <HomeGallery><SectionHeading id="gallery-title" {...siteContent.gallery} /></HomeGallery>
         <Process />
         <ContactForm />
-        <Reviews />
+        <Reviews><SectionHeading id="reviews-title" {...siteContent.reviews} /></Reviews>
       </main>
       <SiteFooter />
       <WhatsAppFloat />
@@ -418,7 +394,8 @@ function HomePage() {
   )
 }
 
-function PlaceholderPage({ page }) {
+function PrivacyPage() {
+  const page = siteContent.privacyPage
   return (
     <main className="placeholder-page wrap">
       <Link className="wordmark" to="/"><span className="wordmark-symbol" aria-hidden="true">{siteContent.business.mark}</span><span>{siteContent.business.name}</span></Link>
@@ -426,6 +403,12 @@ function PlaceholderPage({ page }) {
         <p className="eyebrow"><span aria-hidden="true" />{siteContent.placeholderEyebrow}</p>
         <h1>{page.title}</h1>
         <p>{page.intro}</p>
+        <p className="privacy-draft">{page.draft}</p>
+        <section className="privacy-google" aria-labelledby="privacy-google-title">
+          <h2 id="privacy-google-title">{page.googleTitle}</h2>
+          <p>{page.googleText}</p>
+          <p>{page.removalText}</p>
+        </section>
         <Link className="button button-primary" to="/">{page.back}<ArrowIcon /></Link>
       </div>
     </main>
@@ -450,7 +433,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/privacy" element={<PlaceholderPage page={siteContent.privacyPage} />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

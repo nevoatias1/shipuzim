@@ -10,15 +10,23 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 - Persistence: Spring Data JPA, Flyway, H2 (development/test), PostgreSQL (production)
 - Gallery images: TwelveMonkeys ImageIO WebP 3.15.3; JDK JPEG/PNG codecs; Cloudinary REST through the existing Spring RestClient
 - Security: Spring Security and JDBC starters managed by Spring Boot, jjwt 0.9.1, jaxb-api 2.3.1
+- Google ID token verification: official google-api-client 2.9.1 (September 1, 2026 stable release)
 - Client: React 19.3.1, React Router DOM 7.18.5, Vite 8.3.5, @vitejs/plugin-react 6.1.2, JavaScript
 - Node.js 22.13+ and npm are required for Vite 8 and ESLint 10.
 
 ## Structure
 
 - `server/` — Spring Boot API, persistence, migrations, and tests
-- `client/` — React/Vite app and `/api`, `/authenticate`, `/admin`, `/uploads` development proxies
+- `client/` — React/Vite app and `/api`, `/authenticate`, `/auth`, `/users`, `/admin`, `/uploads` development proxies
 
 ## Done
+
+- Stage 7b: connected the home reviews section to public pagination/statistics, with Hebrew dates, accessible stars, plain-text content, load more, and placeholder fallback for empty/failed requests. Added Google's official Hebrew sign-in button and a lazy shared Identity Services loader triggered within 400px of the section. Missing client ID shows a disabled button; blocked scripts, sign-in conflicts/rate limits, and user-session expiry have Hebrew feedback.
+- Added separate sessionStorage-only user authentication, JWT-owned review loading/create/edit/delete with native rating radios, 500-character counter, validation/focus/live feedback, duplicate-submit prevention, and deletion confirmation. Public lists/statistics refresh after own changes. Added a third keyboard-accessible admin reviews tab with author emails, pagination, and confirmed deletion.
+- Added `VITE_GOOGLE_CLIENT_ID` to the client env example, verified `.env.local` is covered by the existing root ignore rule, and added `/auth` and `/users` Vite proxies. Added an explicitly marked draft Google/privacy/removal section. No npm libraries or server changes in Stage 7b.
+
+- Stage 7a: added public `POST /auth/google` with the official GoogleIdTokenVerifier, configured audience, issuer/signature/time verification, verified-email requirement, existing authentication IP limiter, and base JwtUtil response `{jwt, displayName}`. Google users are created/reused through the existing UserService/JdbcTemplate repository with `google_<sub>`, USER role, name fallbacks, and random bcrypt passwords; account conflicts return clear JSON 409 errors.
+- Added Flyway V4 `review`, unique per user with cascading users FK, rating constraints, text sanitization, UTC timestamps, and review entity/repository/services. Public paginated reviews include global average/count and abbreviated display names without usernames/emails. JWT-owned GET/PUT/DELETE and ADMIN list/delete endpoints use explicit DTOs, with a separate bounded write limiter.
 
 - Retained `GET /api/health` and configurable CORS.
 - Added `ContactRequest`, validation, `POST /api/contact`, and responses that expose only id and creation time.
@@ -62,6 +70,7 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 - The lecturer's JdbcTemplate UserRepository/UserMapper, String username primary key, and Role enum remain unchanged. Copied classes retain the original code after package/import renaming, the specified SecurityConfigure edits, and removal of the encoded-password print in UserService.
 - The only additional edits to copied classes remove the two hard-coded `@CrossOrigin` annotations from AuthenticationController and UserController, necessary to make the existing configured-origin CorsConfig the single CORS source. No reference AdminController, CorsConfigure, data.sql, or application.yaml was copied.
 - SecurityConfigure retains its exact `/users/**` and `/admin/**` authority rules. `/authenticate`, `/api/contact`, `/api/health`, and the disabled `/h2-console/**` path are public; `/users/register` requires authentication. The base circular-reference setting remains enabled.
+- Stage 7a changes only two existing SecurityConfigure matcher lines: adds `/auth/google` beside `/authenticate`, and adds `/api/reviews` to the GET-only `/api/gallery`, `/uploads/**` matcher. No other lecturer class is changed in this stage.
 - Production requires JWT_SECRET containing base64 encoding of at least 32 bytes; only dev/test have a marked non-secret fallback. The base JWT expiration is unchanged at 36000000 ms (10 hours). JwtUtil itself is unchanged except package/import names.
 - Admin bootstrap uses ADMIN_USERNAME, ADMIN_PASSWORD, ADMIN_FIRST_NAME, ADMIN_LAST_NAME, and ADMIN_EMAIL. It creates an absent username through UserService with ADMIN role and bcrypt, and never overwrites an existing account.
 - Stage 6a's only edit to lecturer classes is the HttpMethod import and adjacent GET-only public matcher for `/api/gallery` and `/uploads/**` in SecurityConfigure; the existing public matcher and USER/ADMIN rules are unchanged. The extra matcher keeps the new paths GET-only without restructuring the base.
@@ -69,10 +78,19 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 - All stored gallery files are new PNG rasters, retain transparency, and contain no source metadata. UUID keys are independent of the uploaded filename. Source images above 100 million pixels are rejected before decoding; subsampling bounds the resized raster.
 - Cloudinary uses existing Spring RestClient rather than an SDK, with SHA-256 signed uploads/deletes and CDN invalidation. TwelveMonkeys 3.15.3 (stable October 6 release, more than two weeks old) adds WebP decoding from Maven Central. No new repositories or Spring version pins were added.
 - Storage and database changes are not a distributed transaction. Failed DB creates attempt storage cleanup; failed storage deletion preserves the row for retry. Cloudinary CDN invalidation is eventually applied.
-- Stage 6b adds no libraries. All API/image URL construction uses the public `VITE_API_URL` base; an empty value uses the dev proxies. Tokens are written and read only by `client/src/api/auth.js`, exclusively through sessionStorage.
+- Stage 6b adds no libraries. All API/image URL construction uses the public `VITE_API_URL` base; an empty value uses the dev proxies. Admin tokens are written and read only by `client/src/api/auth.js`, exclusively through sessionStorage.
 - Public gallery responses intentionally omit `sortOrder`; the authenticated admin gallery endpoint exposes it for the admin editor while the home page continues to use the public endpoint.
+- `GOOGLE_CLIENT_ID` is a server environment setting with no real default; if absent, Google sign-in returns 503 while other endpoints work. Official Google verifier 2.9.1 is older than two weeks; keys are cached, and live verification needs Google HTTPS access. Clock skew is zero. Invalid tokens return 401 `INVALID_GOOGLE_TOKEN`; mismatched account email/username/role returns 409 `GOOGLE_ACCOUNT_CONFLICT`. Existing accounts are never automatically linked or promoted, and Google role claims/client role fields are ignored.
+- Google sign-in shares the existing `app.auth.rate-limit` budget with password login. Review writes (own PUT/DELETE and admin DELETE) share `app.reviews.rate-limit`, default 5 requests/3600 seconds/IP with 10000 tracked IPs; all limiters use servlet remote address and stay local to one process.
+- Reviews have one row per authenticated username; PUT edits an existing review without changing its creation time, and serializes first creates by locking the users row. Text controls/format characters are stripped and whitespace trimmed; omitted text is empty, permitting rating-only reviews. Public display names are first name plus last initial. Public/admin lists use default size 20 (maximum 100), newest creation/id first, with global average/count (0 for no reviews). Missing own review or admin deletion target returns 404; successful PUT returns 200 and DELETE 204. Only admin DTOs include `authorEmail` and `updatedAt`; public DTOs never include usernames/emails. Credentials and review DTO string representations are redacted.
+- Stage 7b uses `VITE_GOOGLE_CLIENT_ID` as public browser configuration and requires the same value as server `GOOGLE_CLIENT_ID`, with exact authorized browser origins in Google. User sessions are managed only in `client/src/api/userAuth.js` under `shipuzim.user.session`; admin JWTs remain under `shipuzim.admin.jwt`. Logout/expiry clear only their respective session. User 401/403 and the base's token-error text return to Google sign-in. No localStorage tokens or embedded Google client secrets.
+- Public review pages request 6 items; admin pages request 20. Public text is rendered with React text nodes, never HTML. Own-review load failure offers retry before editing, while 404 enables a new review. Both client and server strip control/format characters and trim review text. Rating-only reviews remain supported. Google initializes once per loaded SDK, renders the official Hebrew button at a container-bounded width, disables automatic sign-in, and calls disableAutoSelect on user logout. Privacy wording is a marked draft awaiting business review and removal/retention details.
 
 ## Verification
+
+- Stage 7b: `npm.cmd run lint` and `npm.cmd run build` passed. Isolated Chromium checks with mocked Google/API responses verified deferred script loading, Hebrew button configuration, 409/429 feedback, session separation and no localStorage tokens, own-review validation/save/prefill/delete/401, duplicate prevention, plain-text HTML handling, load more, empty/error fallback, admin tab keyboard navigation/deletion, privacy draft, and missing-client-ID fallback. Home form, admin reviews, and privacy had no document overflow at 320/360/390/412/768/1200px. No real Google login, API submissions, or deletions were performed. Source/config/docs checked for UTF-8 without BOM; no dependencies, server/reference changes, or git commands.
+
+- Stage 7a: 61 tests passed, 0 failures/errors/skips (all 43 existing plus 10 Google and 8 review tests). Tests mock the official Google verifier and send no Google network requests; cover USER-only JWTs, identity reuse/bcrypt, role claims, audience/issuer/expiry/unverified/invalid tokens, account conflicts, shared auth limits, own create/edit/delete and ownership, public pagination/statistics/privacy, admin access/deletion, validation/sanitization, cascading deletion, and review write limits. Google dependencies downloaded successfully from Maven Central. Verification used `.\mvnw.cmd -o "-Dmaven.repo.local=target/m2" test` with permitted workspace-cache access after downloads; the default cache remains unwritable in this environment. Server/docs/env changes checked for strict UTF-8 without BOM. Client and reference files were not changed.
 
 - Admin gallery prefill follow-up: 43 server tests passed, including ADMIN access with `sortOrder`, and rejection for anonymous/USER callers. `npm.cmd run lint` and `npm.cmd run build` passed. Public gallery DTO remains covered without `sortOrder`.
 
@@ -88,4 +106,4 @@ Shiputzim is a small business website for decorative wall cladding (stone, wood,
 
 ## Next step
 
-Stage 7: Google login + reviews
+Stage 8: QA + Postgres check

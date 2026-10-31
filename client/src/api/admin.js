@@ -1,5 +1,6 @@
 import { adminRequest } from './auth.js'
 import { ApiError } from './http.js'
+import { validateReviewPage } from './reviews.js'
 
 export async function getRequests(page, signal) {
   const data = await adminRequest(`/admin/contact-requests?page=${page}&size=20`, { signal })
@@ -35,4 +36,12 @@ export function updateGalleryItem(id, values) {
 
 export function deleteGalleryItem(id) {
   return adminRequest(`/admin/gallery/${id}`, { method: 'DELETE' })
+}
+
+export async function getAdminReviews(page, signal) {
+  return validateReviewPage(await adminRequest(`/admin/reviews?page=${page}&size=20`, { signal }))
+}
+
+export function deleteAdminReview(id) {
+  return adminRequest(`/admin/reviews/${id}`, { method: 'DELETE' })
 }

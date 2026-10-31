@@ -58,8 +58,12 @@
 .gallery-editor summary:focus-visible { outline: 3px solid #cd7348; outline-offset: 4px; }
 .gallery-editor form { padding-block: 0.75rem 1rem; }
 .button-danger { min-height: 2.75rem; color: #842b20; background: #fbede8; border-color: #dbb8ab; font-size: 0.85rem; }
+.admin-review-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; align-items: start; }
+.admin-review-grid .review-card { padding: 1.25rem; border-radius: var(--radius-md); }
+.admin-review-grid .admin-review-email { min-height: 0; margin-block: 1rem; font-size: 0.8rem; overflow-wrap: anywhere; }
+@media (max-width: 519px) { .admin-tabs button { padding-inline: 0.35rem; font-size: 0.92rem; } }
 @media (min-width: 700px) {
-  .request-list, .admin-gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .request-list, .admin-gallery-grid, .admin-review-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-pagination span { flex: 1; order: 0; }
   .admin-pagination .button { flex: 0 1 auto; }
 }

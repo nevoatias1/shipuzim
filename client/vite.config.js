@@ -7,6 +7,8 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:8080',
       '/authenticate': 'http://localhost:8080',
+      '/auth': 'http://localhost:8080',
+      '/users': 'http://localhost:8080',
       '/admin': {
         target: 'http://localhost:8080',
         bypass(request) {

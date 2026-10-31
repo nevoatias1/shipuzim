@@ -5,9 +5,15 @@ import { errorMessage } from '../api/errors.js'
 import siteContent from '../content/siteContent.js'
 import RequestsPanel from './RequestsPanel.jsx'
 import GalleryPanel from './GalleryPanel.jsx'
+import ReviewsPanel from './ReviewsPanel.jsx'
 import './admin.css'
 
 const copy = siteContent.admin
+const tabs = [
+  { name: 'requests', label: copy.requestsTab },
+  { name: 'gallery', label: copy.galleryTab },
+  { name: 'reviews', label: copy.reviewsTab },
+]
 
 function LoginForm({ message, onLogin }) {
   const [username, setUsername] = useState('')
@@ -99,7 +105,7 @@ export default function AdminPage() {
   }
 
   function changeTab(event) {
-    const names = ['requests', 'gallery']
+    const names = tabs.map((item) => item.name)
     const index = names.indexOf(tab)
     let next
     if (event.key === 'ArrowLeft') next = names[(index + 1) % names.length]
@@ -126,15 +132,15 @@ export default function AdminPage() {
         {authenticated ? <>
           <div className="admin-heading"><p className="eyebrow"><span aria-hidden="true" />{copy.eyebrow}</p><h1 id="admin-title">{copy.title}</h1></div>
           <div className="admin-tabs" role="tablist" aria-label={copy.tabsLabel} onKeyDown={changeTab}>
-            {['requests', 'gallery'].map((name) => (
+            {tabs.map(({ name, label }) => (
               <button key={name} ref={(element) => { tabRefs.current[name] = element }} type="button" role="tab" id={`tab-${name}`}
                 aria-selected={tab === name} aria-controls={`panel-${name}`} tabIndex={tab === name ? 0 : -1} onClick={() => setTab(name)}>
-                {name === 'requests' ? copy.requestsTab : copy.galleryTab}
+                {label}
               </button>
             ))}
           </div>
           <section id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0}>
-            {tab === 'requests' ? <RequestsPanel /> : <GalleryPanel />}
+            {tab === 'requests' ? <RequestsPanel /> : tab === 'gallery' ? <GalleryPanel /> : <ReviewsPanel />}
           </section>
         </> : <LoginForm message={message} onLogin={() => { setAuthenticated(true); setMessage(''); setTab('requests') }} />}
       </div>

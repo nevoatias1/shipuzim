@@ -32,7 +32,7 @@ To run with PostgreSQL, set `SPRING_PROFILES_ACTIVE=prod`, `DB_URL`, `DB_USERNAM
 
 The optional `website` field is a honeypot for the future hidden frontend input. A nonblank value receives a synthetic 201 receipt without saving a request or sending mail. Blank or absent values follow normal validation.
 
-`POST /api/contact` defaults to 5 attempts per IP per 600 seconds, including invalid requests and honeypot submissions. `POST /authenticate` has an independent allowance of 10 attempts per IP per 600 seconds, including failed logins. Configure `app.contact.rate-limit.limit`, `app.contact.rate-limit.window-seconds`, and `app.contact.rate-limit.max-ips` for contact requests; use the same suffixes under `app.auth.rate-limit` for authentication. Each limiter removes expired windows on an attempt, caps tracking at 10,000 IPs, and rejects new IPs while capacity is full. Limits are per application process and reset on restart.
+`POST /api/contact` defaults to 5 attempts per IP per 600 seconds, including invalid requests and honeypot submissions. `POST /authenticate` and `POST /auth/google` share an independent allowance of 10 attempts per IP per 600 seconds, including failed logins. Configure `app.contact.rate-limit.limit`, `app.contact.rate-limit.window-seconds`, and `app.contact.rate-limit.max-ips` for contact requests; use the same suffixes under `app.auth.rate-limit` for authentication. Each limiter removes expired windows on an attempt, caps tracking at 10,000 IPs, and rejects new IPs while capacity is full. Limits are per application process and reset on restart.
 
 The prod profile uses Spring's forwarded-header handling. Put production behind a trusted reverse proxy that replaces client-supplied forwarded headers; the limiter reads only the resulting servlet `getRemoteAddr()`.
 
@@ -67,9 +67,9 @@ Bootstrap runs after migrations. It acts only when both username and password ar
 
 With the server running, start the client as described below and open `http://localhost:5173/admin` (or the port Vite prints). Enter the username and password used for bootstrap. The dashboard has Hebrew tabs for quote requests and gallery management. Requests support pagination, status toggles, tap-to-call, and WhatsApp; the gallery supports validated image uploads with preview, caption/category/order editing, and confirmed deletion.
 
-The JWT is kept only in the current tab's `sessionStorage`, survives page refreshes in that tab, and is removed by logout or an expired/invalid/forbidden admin response. It is never written to `localStorage`. The admin route adds a `noindex` robots meta tag while open. Do not put admin credentials, JWTs, or Cloudinary secrets in client environment files.
+The admin JWT is kept only in the current tab's `sessionStorage` under `shipuzim.admin.jwt`, survives page refreshes in that tab, and is removed by logout or an expired/invalid/forbidden admin response. The reviews tab lists reviewers' emails for moderation and supports confirmed deletion. Review-user sessions use a separate key (`shipuzim.user.session`) and do not change the admin login. Tokens are never written to `localStorage`. The admin route adds a `noindex` robots meta tag while open. Do not put admin credentials, JWTs, or Cloudinary secrets in client environment files.
 
-The Stage 6a gallery list does not expose `sortOrder`. The editor shows each image's current position and requires a numeric order value when saving an edit; lower numbers appear first. It never guesses the previous numeric value. Prefilling that value would require a future server admin-read DTO exposing it.
+The admin gallery editor uses authenticated `GET /admin/gallery` to prefill caption, category, and `sortOrder`; lower numbers appear first. The home page continues to use the public list, which omits ordering metadata.
 
 `POST /authenticate` accepts `{"username":"...","password":"..."}` and returns `{"jwt":"..."}` for correct credentials, or 403 for an incorrect password. Send the returned token as `Authorization: Bearer <jwt>`:
 
@@ -87,6 +87,7 @@ Flyway V3 creates `gallery_item`; Hibernate continues to validate the schema. Ga
 | Endpoint | Access and result |
 | --- | --- |
 | `GET /api/gallery` | Public array of `{id, imageUrl, caption, category}`, ordered by `sortOrder` ascending, then creation time and id descending |
+| `GET /admin/gallery` | ADMIN bearer token; same ordering, with `{id, imageUrl, caption, category, sortOrder, createdAt}` |
 | `POST /admin/gallery` | ADMIN bearer token; multipart fields `file`, optional `caption` (max 200 characters), and required `category`; returns 201 with the item |
 | `PUT /admin/gallery/{id}` | ADMIN bearer token; JSON `{caption, category, sortOrder}`; returns the updated item, or 404 |
 | `DELETE /admin/gallery/{id}` | ADMIN bearer token; deletes the stored image and database row; returns 204, or 404 |
@@ -110,6 +111,35 @@ Cloudinary uses Spring's existing `RestClient` and the [signed Upload API](https
 Cloudinary deletion requests CDN invalidation; cached copies can take time to disappear. Database and storage do not share a transaction: failed database creates attempt image cleanup, and failed storage deletes leave the row for retry. Keep the selected backend consistent with the database's stored keys. Tests use local temporary directories and mock Cloudinary HTTP responses; live Cloudinary delivery requires configured account credentials.
 
 Run server verification from `server/` with `.\mvnw.cmd test`. If this environment's default `C:\.m2\repository` is unwritable, use `.\mvnw.cmd "-Dmaven.repo.local=target/m2" test` to keep the Maven cache within the workspace.
+
+## Google sign-in and reviews
+
+Set `GOOGLE_CLIENT_ID` in the server process environment to the Google OAuth **Web application** client ID used by the browser. The root `.env.example` contains an empty placeholder. If absent, the server still starts and `POST /auth/google` returns 503 `GOOGLE_SIGN_IN_NOT_CONFIGURED`.
+
+For the client, create `client/.env.local` with `VITE_GOOGLE_CLIENT_ID=<the same Web client ID>`. `client/.env.example` has an empty placeholder; the root `.env.*` ignore rule covers `.env.local` at every level, including `client/`. The client ID is public configuration; never put a Google client secret in any `VITE_` variable. Restart Vite after changing it, or rebuild for production. Register the exact browser origin (scheme, hostname, and port, normally `http://localhost:5173`) in the Google Web client's authorized JavaScript origins. If Vite uses another port or you use `127.0.0.1`, authorize that exact origin too. Client and server IDs must match.
+
+The home page loads public review cards, Hebrew dates, average rating/count, and more pages on demand. Empty/unavailable lists retain the clearly marked placeholders. Review text is rendered as plain text. Google's official Identity Services script loads only when the reviews section is within 400px of the viewport, and its official button uses Hebrew locale; no automatic One Tap prompt is requested. Without a configured client ID the button stays disabled with a short note. A blocked Google script offers retry feedback. The sign-in response is saved only in this tab's sessionStorage, separately from the admin session. Sign-out removes that user session and calls `disableAutoSelect()`.
+
+Signed-in users can load, create, edit, or delete their own review with a native 1–5 radio rating, optional text up to 500 characters and a character counter, server/client validation feedback, duplicate-submit prevention, and deletion confirmation. An expired or rejected user session returns the section to sign-in without changing the admin token. Own-review changes refresh the public list and statistics. Admins use `/admin` → `ביקורות` to see emails, page through reviews, and delete with confirmation. The privacy page's Google section is explicitly a draft: review the wording and complete the removal contact and retention details before publication.
+
+`POST /auth/google` accepts `{"credential":"<Google ID token>"}` and returns `{"jwt":"...","displayName":"..."}`. The server uses the official `com.google.api-client:google-api-client:2.9.1` verifier ([September 1, 2026 release](https://github.com/googleapis/google-api-java-client/releases/tag/v2.9.1), older than two weeks). It verifies the Google signature, issuer, audience against `GOOGLE_CLIENT_ID`, issuance/expiry with zero clock skew, and requires `email_verified=true`. The verifier caches Google's public keys; live sign-in needs outbound HTTPS access to Google. Tests mock the verifier and make no Google requests.
+
+Verified identities use `google_<sub>` usernames and are created through the existing UserService/JdbcTemplate repository with USER role and a bcrypt hash of an unrecorded random password. Role claims and client role fields are ignored; Google sign-in never grants ADMIN. Missing name claims use `-`. Existing identities are reused without changing their password or profile. An email belonging to another username, an incompatible existing role, or a changed email for an existing Google username returns 409 `GOOGLE_ACCOUNT_CONFLICT`; accounts are not automatically linked. Invalid/unverified tokens return 401 `INVALID_GOOGLE_TOKEN`; the shared authentication limiter returns 429 `TOO_MANY_REQUESTS`. Send the returned app JWT as `Authorization: Bearer <jwt>` for own-review calls.
+
+Flyway V4 creates `review` with rating 1–5, text up to 500 characters, UTC creation/update times, a unique username, and a foreign key to users with `ON DELETE CASCADE`. Each user has at most one review. Text is trimmed and control/format characters are removed before validation; omitted/null text becomes an empty string, allowing a rating-only review. Public display names use the first name and last initial, for example `Test P.`.
+
+| Endpoint | Access and result |
+| --- | --- |
+| `GET /api/reviews?page=0&size=20` | Public; newest creation time/id first; `{items, page, size, totalElements, totalPages, average, count}`. Each item is exactly `{id, displayName, rating, text, createdAt}`; no email or username |
+| `GET /users/review` | USER/ADMIN JWT; own `{id, rating, text, createdAt, updatedAt}`; 404 if absent |
+| `PUT /users/review` | USER/ADMIN JWT; JSON `{rating, text}` creates or edits the authenticated user's single review, returning 200 with the own-review DTO. Body id/username cannot select an author |
+| `DELETE /users/review` | USER/ADMIN JWT; deletes only the authenticated user's review; 204, or 404 if absent |
+| `GET /admin/reviews?page=0&size=20` | ADMIN JWT; same page envelope and ordering, with `authorEmail` and `updatedAt` added to each item |
+| `DELETE /admin/reviews/{id}` | ADMIN JWT; 204, or 404 if absent |
+
+`average` and `count` cover all reviews, including when a page is empty; both are 0 for an empty collection. Page numbers start at 0, the default size is 20, and size must be 1–100. Edits preserve creation time and list position. Own PUT/DELETE and admin review DELETE requests share a separate per-IP write allowance, default 5 per hour. Configure `app.reviews.rate-limit.limit`, `app.reviews.rate-limit.window-seconds` (default 3600), and `app.reviews.rate-limit.max-ips` (default 10000). It uses the existing bounded in-memory limiter and servlet `getRemoteAddr()`; reads do not consume it. Validation returns 400 `VALIDATION_FAILED` with field errors.
+
+The Stage 7a changes to `SecurityConfigure` only add `/auth/google` to the existing public matcher and `/api/reviews` to the existing GET-only public matcher. Existing USER/ADMIN rules, filters, JWT handling, and password login remain as in the lecturer base. Review and Google credential DTOs redact their string representations, and no new code logs credentials or review contents.
 
 ## Email notifications
 
@@ -136,8 +166,8 @@ npm install
 npm run dev
 ```
 
-Open the URL printed by Vite, normally `http://localhost:5173`. Vite proxies `/api`, `/authenticate`, `/admin` API calls, and `/uploads` to the server on port 8080. HTML navigation to the exact `/admin` route serves the React application, so refreshing the admin screen also works. Run `npm run lint` and `npm run build` from `client` to check the client.
+Open the URL printed by Vite, normally `http://localhost:5173`. Vite proxies `/api`, `/authenticate`, `/auth`, `/users`, `/admin` API calls, and `/uploads` to the server on port 8080. HTML navigation to the exact `/admin` route serves the React application, so refreshing the admin screen also works. Run `npm run lint` and `npm run build` from `client` to check the client.
 
 The client reads `VITE_API_URL` as the API origin. Leave it empty in local development to use Vite's `/api` proxy; set it in `client/.env.local` only when connecting directly to an API hosted elsewhere. `client/.env.example` contains the empty placeholder.
 
-Relative image URLs are prefixed with `VITE_API_URL`; absolute Cloudinary URLs are used as returned. `VITE_API_URL` is public build configuration and contains no credentials. Rebuild the client after changing it. Production hosting must serve the SPA for the `/admin` page while forwarding its `/admin/...` API paths to Spring when using a shared origin.
+Relative image URLs are prefixed with `VITE_API_URL`; absolute Cloudinary URLs are used as returned. `VITE_API_URL` and `VITE_GOOGLE_CLIENT_ID` are public build configuration and contain no secrets. Rebuild the client after changing them. Production hosting must serve the SPA for the `/admin` page while forwarding `/api`, `/authenticate`, `/auth`, `/users`, `/admin/...`, and `/uploads` API paths to Spring when using a shared origin.
