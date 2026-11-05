@@ -15,7 +15,7 @@
 .admin-page .button { max-width: 100%; min-height: 2.75rem; overflow-wrap: anywhere; cursor: pointer; }
 .admin-page .button:disabled { cursor: wait; opacity: 0.65; }
 .admin-page .admin-pagination .button:disabled { cursor: not-allowed; }
-.admin-tabs { display: flex; gap: 0.5rem; padding: 0.4rem; margin-bottom: 1.5rem; background: var(--paper-deep); border: 1px solid var(--line); border-radius: var(--radius-md); }
+.admin-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.4rem; margin-bottom: 1.5rem; background: var(--paper-deep); border: 1px solid var(--line); border-radius: var(--radius-md); }
 .admin-tabs button { flex: 1; min-height: 3rem; padding: 0.6rem 1rem; color: var(--ink); background: transparent; border: 0; border-radius: var(--radius-sm); font-size: 1rem; font-weight: 700; cursor: pointer; }
 .admin-tabs button[aria-selected='true'] { color: var(--white); background: var(--olive); }
 .admin-kicker { color: #74614d; font-size: 0.75rem; line-height: 1.6; }
@@ -71,3 +71,11 @@
   .gallery-upload { grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr); gap: 3rem; padding: 2rem; }
   .request-card { padding: 1.6rem; }
 }
+
+.admin-service-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+.service-image-editor { padding: 1.25rem; overflow-wrap: anywhere; }
+.service-image-editor h3 { margin-top: 0; font-size: 1.15rem; }
+.admin-service-image { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; margin-bottom: 1rem; }
+.service-image-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+.service-image-actions .button { font-size: 0.85rem; padding-inline: 0.85rem; }
+@media (min-width: 700px) { .admin-service-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -47,7 +47,10 @@ public class SmtpNotificationService implements NotificationService {
         return switch (value) {
             case CLADDING -> "חיפוי קירות";
             case PAINTING -> "צביעה";
-            case BOTH -> "חיפוי קירות וצביעה";
+            case BOTH -> "חיפוי וצביעה";
+            case PERGOLA_FIXED -> "פרגולות קבועות";
+            case PERGOLA_ELECTRIC -> "פרגולות חשמליות";
+            case BALCONY_ENCLOSURE -> "סגירת מרפסות";
             case OTHER -> "אחר";
         };
     }

@@ -5,6 +5,10 @@ import AdminPage from './admin/AdminPage.jsx'
 import HomeGallery from './components/HomeGallery.jsx'
 import Reviews from './components/Reviews.jsx'
 import siteContent from './content/siteContent.js'
+import { getServiceImages } from './api/serviceImages.js'
+import { imageUrl } from './api/http.js'
+import heroWide from './assets/hero-1920.webp'
+import heroNarrow from './assets/hero-960.webp'
 
 const phonePattern = /^(?:0|\+972)[ -]?(?:5\d(?:[ -]?\d){7}|[23489](?:[ -]?\d){7})$/
 
@@ -111,6 +115,15 @@ function SectionHeading({ id, eyebrow, title, intro, light = false }) {
 function Hero() {
   return (
     <section className="hero" aria-labelledby="hero-title">
+      <img
+        className="hero-background"
+        src={heroWide}
+        srcSet={`${heroNarrow} 960w, ${heroWide} 1920w`}
+        sizes="(max-width: 600px) 100vw, 100vw"
+        alt="חזית בית לפני ואחרי שיפוץ – חיפוי וצביעה"
+        loading="eager"
+        fetchPriority="high"
+      />
       <div className="hero-layout wrap">
         <div className="hero-copy">
           <p className="eyebrow"><span aria-hidden="true" />{siteContent.hero.eyebrow}</p>
@@ -124,14 +137,6 @@ function Hero() {
           </div>
           <p className="hero-note"><span aria-hidden="true">✳</span>{siteContent.hero.note}</p>
         </div>
-        <div className="hero-art" aria-label={siteContent.hero.artLabel} role="img">
-          <span className="art-sun" />
-          <span className="art-wall art-wall-stone" />
-          <span className="art-wall art-wall-wood" />
-          <span className="art-plinth" />
-          <span className="art-caption">{siteContent.hero.artCaption}</span>
-          <span className="art-stamp" aria-hidden="true">{siteContent.business.mark}</span>
-        </div>
       </div>
       <a className="hero-scroll" href="#services"><span aria-hidden="true" />{siteContent.hero.scrollLabel}</a>
     </section>
@@ -139,13 +144,23 @@ function Hero() {
 }
 
 function Services() {
+  const [images, setImages] = useState({})
+  useEffect(() => {
+    const controller = new AbortController()
+    getServiceImages(controller.signal).then((result) => {
+      if (!controller.signal.aborted) setImages(result)
+    }).catch(() => { /* Keep the original cards when images are unavailable. */ })
+    return () => controller.abort()
+  }, [])
+
   return (
     <section className="section services-section" id="services" aria-labelledby="services-title">
       <div className="wrap">
         <SectionHeading id="services-title" {...siteContent.services} />
         <div className="services-grid">
           {siteContent.services.items.map((service) => (
-            <article className="service-card" key={service.number}>
+            <article className="service-card" key={service.key}>
+              {images[service.key] && <img className="service-card-image" src={imageUrl(images[service.key], 600)} alt="" loading="lazy" decoding="async" width="600" height="400" />}
               <div className="service-card-top"><span className="service-number">{service.number}</span><span className="service-mark" aria-hidden="true">↙</span></div>
               <h3>{service.title}</h3>
               <p>{service.description}</p>

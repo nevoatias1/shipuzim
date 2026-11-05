@@ -86,6 +86,19 @@ class ContactRequestControllerTest {
     }
 
     @ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(value = WorkType.class,
+            names = {"PERGOLA_FIXED", "PERGOLA_ELECTRIC", "BALCONY_ENCLOSURE", "BOTH", "OTHER"})
+    void acceptsAndPersistsAdditionalAndLegacyWorkTypes(WorkType workType) throws Exception {
+        String response = mockMvc.perform(post("/api/contact")
+                        .with(request -> { request.setRemoteAddr("192.0.2." + NEXT_IP.incrementAndGet()); return request; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fullName\":\"New project\",\"phone\":\"0501234567\",\"workType\":\"" + workType + "\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        assertThat(repository.findById(objectMapper.readTree(response).get("id").asLong()).orElseThrow().getWorkType())
+                .isEqualTo(workType);
+    }
+
+    @ParameterizedTest
     @MethodSource("invalidRequests")
     void invalidFieldsReturnBadRequestWithFieldErrors(String request, String expectedField) throws Exception {
         mockMvc.perform(post("/api/contact")

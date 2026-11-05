@@ -6,12 +6,14 @@ import siteContent from '../content/siteContent.js'
 import RequestsPanel from './RequestsPanel.jsx'
 import GalleryPanel from './GalleryPanel.jsx'
 import ReviewsPanel from './ReviewsPanel.jsx'
+import ServicesPanel from './ServicesPanel.jsx'
 import './admin.css'
 
 const copy = siteContent.admin
 const tabs = [
   { name: 'requests', label: copy.requestsTab },
   { name: 'gallery', label: copy.galleryTab },
+  { name: 'services', label: copy.servicesTab },
   { name: 'reviews', label: copy.reviewsTab },
 ]
 
@@ -137,7 +139,7 @@ export default function AdminPage() {
             ))}
           </div>
           <section id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0}>
-            {tab === 'requests' ? <RequestsPanel /> : tab === 'gallery' ? <GalleryPanel /> : <ReviewsPanel />}
+            {tab === 'requests' ? <RequestsPanel /> : tab === 'gallery' ? <GalleryPanel /> : tab === 'services' ? <ServicesPanel /> : <ReviewsPanel />}
           </section>
         </> : <LoginForm message={message} onLogin={() => { setAuthenticated(true); setMessage(''); setTab('requests') }} />}
       </div>

@@ -152,6 +152,25 @@ class GalleryIntegrationTest {
                 .andExpect(jsonPath("$[0].createdAt").exists());
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(value = GalleryCategory.class,
+            names = {"PERGOLA_FIXED", "PERGOLA_ELECTRIC", "BALCONY_ENCLOSURE", "BOTH", "OTHER"})
+    void createsAndReturnsAdditionalAndLegacyCategories(GalleryCategory category) throws Exception {
+        String response = mvc.perform(multipart("/admin/gallery").file(file(png(), "new.png", "image/png"))
+                        .param("category", category.name()).header("Authorization", token(Role.ADMIN)))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.category").value(category.name()))
+                .andReturn().getResponse().getContentAsString();
+        long id = mapper.readTree(response).get("id").asLong();
+        assertThat(repository.findById(id).orElseThrow().getCategory()).isEqualTo(category);
+        mvc.perform(get("/api/gallery")).andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].category").value(category.name()));
+        mvc.perform(put("/admin/gallery/{id}", id).header("Authorization", token(Role.ADMIN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"category\":\"ROOFING\",\"sortOrder\":0}"))
+                .andExpect(status().isBadRequest());
+        assertThat(repository.findById(id).orElseThrow().getCategory()).isEqualTo(category);
+    }
+
     @Test
     void mutationsRejectAnonymousAndUserTokens() throws Exception {
         for (String authorization : List.of("", token(Role.USER))) {
@@ -218,7 +237,7 @@ class GalleryIntegrationTest {
         upload(png(), "a.png", "image/png", "a".repeat(201)).andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fields.caption").isNotEmpty());
         mvc.perform(multipart("/admin/gallery").file(file(png(), "a.png", "image/png"))
-                        .param("category", "OTHER").header("Authorization", token(Role.ADMIN)))
+                        .param("category", "ROOFING").header("Authorization", token(Role.ADMIN)))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.fields.category").isNotEmpty());
         mvc.perform(multipart("/admin/gallery").param("category", "CLADDING")
                         .header("Authorization", token(Role.ADMIN)))

@@ -38,6 +38,16 @@ export function deleteGalleryItem(id) {
   return adminRequest(`/admin/gallery/${id}`, { method: 'DELETE' })
 }
 
+export function putServiceImage(key, file) {
+  const body = new FormData()
+  body.append('file', file)
+  return adminRequest(`/admin/service-images/${key}`, { method: 'PUT', body })
+}
+
+export function deleteServiceImage(key) {
+  return adminRequest(`/admin/service-images/${key}`, { method: 'DELETE' })
+}
+
 export async function getAdminReviews(page, signal) {
   return validateReviewPage(await adminRequest(`/admin/reviews?page=${page}&size=20`, { signal }))
 }
