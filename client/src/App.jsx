@@ -422,7 +422,7 @@ function PrivacyPage() {
         <section className="privacy-google" aria-labelledby="privacy-google-title">
           <h2 id="privacy-google-title">{page.googleTitle}</h2>
           <p>{page.googleText}</p>
-          <p>{page.removalText}</p>
+          <p>{page.removalText} <a href={`mailto:${page.removalEmailHref}`}>{page.removalEmail}</a> {page.removalSuffix}</p>
         </section>
         <Link className="button button-primary" to="/">{page.back}<ArrowIcon /></Link>
       </div>

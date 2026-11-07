@@ -7,14 +7,14 @@ const siteContent = {
     description: 'חיפוי קירות, צביעה, פרגולות קבועות וחשמליות וסגירת מרפסות, משלב הרעיון ועד הגימור.',
   },
   contact: {
-    phone: 'TODO: phone',
-    phoneHref: '',
-    whatsappNumber: '972000000000', // TODO: replace with the business WhatsApp number, digits with country code.
-    whatsappLabel: 'TODO: WhatsApp number',
-    email: 'TODO: email',
-    emailHref: '',
+    phone: '052-777-2209',
+    phoneHref: '+972527772209',
+    whatsappNumber: '972527772209',
+    whatsappLabel: '052-777-2209',
+    email: 'eli0527772209@gmail.com',
+    emailHref: 'eli0527772209@gmail.com',
   },
-  serviceAreas: ['TODO: אזור שירות 1', 'TODO: אזור שירות 2', 'TODO: אזור שירות 3'],
+  serviceAreas: ['מרכז'],
   navigation: [
     { href: '#services', label: 'השירותים שלנו' },
     { href: '#gallery', label: 'העבודות שלנו' },
@@ -189,7 +189,8 @@ const siteContent = {
     draft: 'טיוטה לבדיקת בעל העסק — יש להשלים ולאשר לפני פרסום.',
     googleTitle: 'התחברות עם Google וביקורות',
     googleText: 'בהתחברות עם Google מתקבלים השם וכתובת הדוא״ל שלכם לצורך זיהוי החשבון והצגת שם הכותב לצד הביקורת. הפרטים משמשים רק לשירות הביקורות ולא לדיוור או לשיווק. באתר מוצגים השם הפרטי והאות הראשונה של שם המשפחה; כתובת הדוא״ל אינה מוצגת לציבור וזמינה למנהל האתר לצורכי ניהול הביקורות.',
-    removalText: 'אפשר לערוך או למחוק את הביקורת לאחר ההתחברות. להסרת פרטי החשבון אפשר לפנות לעסק ולבקש מחיקה. TODO: יש להשלים פרטי קשר לבקשות הסרה, זמני שמירה והנוסח הסופי של מדיניות הפרטיות.',
+    removalText: 'אפשר לערוך או למחוק את הביקורת לאחר ההתחברות. להסרת פרטי החשבון אפשר לפנות לעסק ולבקש מחיקה בדוא״ל:',
+    removalSuffix: 'יש להשלים זמני שמירה ואת הנוסח הסופי של מדיניות הפרטיות.',
   },
   admin: {
     title: 'ניהול העסק',
@@ -317,5 +318,7 @@ const siteContent = {
 }
 
 siteContent.whatsappUrl = `https://wa.me/${siteContent.contact.whatsappNumber}?text=${encodeURIComponent(siteContent.whatsapp.message)}`
+siteContent.privacyPage.removalEmail = siteContent.contact.email
+siteContent.privacyPage.removalEmailHref = siteContent.contact.emailHref
 
 export default siteContent
