@@ -1,4 +1,4 @@
-import { ApiError, apiUrl, readBody } from './http.js'
+import { ApiError, apiFetch, apiUrl, readBody } from './http.js'
 import { userRequest } from './userAuth.js'
 import siteContent from '../content/siteContent.js'
 
@@ -13,7 +13,7 @@ export function validateReviewPage(data) {
 }
 
 export async function getReviews(page, signal) {
-  const response = await fetch(apiUrl(`/api/reviews?page=${page}&size=6`), { signal, credentials: 'omit', cache: 'no-store' })
+  const response = await apiFetch(apiUrl(`/api/reviews?page=${page}&size=6`), { signal, credentials: 'omit', cache: 'no-store' })
   const body = await readBody(response)
   if (!response.ok) throw new ApiError(response.status, body)
   return validateReviewPage(body)

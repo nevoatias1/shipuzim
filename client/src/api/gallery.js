@@ -1,7 +1,7 @@
-import { ApiError, apiUrl, readBody } from './http.js'
+import { ApiError, apiFetch, apiUrl, readBody } from './http.js'
 
 export async function getGallery(signal) {
-  const response = await fetch(apiUrl('/api/gallery'), { signal, credentials: 'omit', cache: 'no-store' })
+  const response = await apiFetch(apiUrl('/api/gallery'), { signal, credentials: 'omit', cache: 'no-store' })
   const body = await readBody(response)
   if (!response.ok || !Array.isArray(body)) throw new ApiError(response.status || 500, body)
   return body

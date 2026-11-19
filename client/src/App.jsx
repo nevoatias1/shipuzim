@@ -145,11 +145,13 @@ function Hero() {
 
 function Services() {
   const [images, setImages] = useState({})
+  const [loadingImages, setLoadingImages] = useState(true)
   useEffect(() => {
     const controller = new AbortController()
     getServiceImages(controller.signal).then((result) => {
       if (!controller.signal.aborted) setImages(result)
     }).catch(() => { /* Keep the original cards when images are unavailable. */ })
+      .finally(() => { if (!controller.signal.aborted) setLoadingImages(false) })
     return () => controller.abort()
   }, [])
 
@@ -157,6 +159,7 @@ function Services() {
     <section className="section services-section" id="services" aria-labelledby="services-title">
       <div className="wrap">
         <SectionHeading id="services-title" {...siteContent.services} />
+        {loadingImages && <p className="service-images-loading" role="status" aria-live="polite" aria-busy="true">{siteContent.admin.serviceImagesLoading}</p>}
         <div className="services-grid">
           {siteContent.services.items.map((service) => (
             <article className="service-card" key={service.key}>

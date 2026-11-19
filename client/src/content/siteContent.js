@@ -50,6 +50,7 @@ const siteContent = {
     cardCta: 'בואו נדבר',
   },
   gallery: {
+    loading: 'טוענים את העבודות... ייתכן שהשרת מתעורר, זה יכול לקחת כדקה.',
     categories: [
       { value: 'ALL', label: 'הכל' },
       { value: 'CLADDING', label: 'חיפוי' },
@@ -116,7 +117,7 @@ const siteContent = {
     description: 'כמה מילים על הפרויקט',
     descriptionPlaceholder: 'איזה קיר או חלל תרצו לשדרג?',
     submit: 'שליחת בקשה',
-    sending: 'שולחים...',
+    sending: 'שולחים... ייתכן שהשרת מתעורר, זה יכול לקחת כדקה.',
     honeypot: 'השאירו את השדה הזה ריק',
     success: 'תודה, הבקשה נשלחה בהצלחה. נחזור אליכם בהקדם.',
     rateLimited: 'נשלחו יותר מדי פניות, נסו שוב בעוד כמה דקות',
@@ -153,7 +154,7 @@ const siteContent = {
     notFound: 'הביקורת כבר אינה קיימת. נסו לטעון אותה מחדש.',
     listFailed: 'הביקורות אינן זמינות כרגע. אפשר לנסות שוב.',
     retry: 'ניסיון נוסף',
-    loading: 'טוענים ביקורות...',
+    loading: 'טוענים ביקורות... ייתכן שהשרת מתעורר, זה יכול לקחת כדקה.',
     loadMore: 'ביקורות נוספות',
     average: 'דירוג ממוצע',
     count: 'ביקורות',
@@ -250,6 +251,7 @@ const siteContent = {
     pagination: 'דפדוף בפניות',
     uploadTitle: 'עוד קיר עם אופי',
     uploadIntro: 'הוסיפו תמונה לגלריית העבודות באתר.',
+    serviceImagesLoading: 'טוענים תמונות שירות... השרת עשוי להתעורר, זה יכול לקחת כדקה.',
     file: 'תמונת העבודה',
     fileHelp: 'JPEG, PNG או WebP, עד 10 MB.',
     checkingFile: 'בודקים את התמונה...',

@@ -1,4 +1,19 @@
 const baseUrl = (import.meta.env.VITE_API_URL ?? '').trim().replace(/\/+$/, '')
+export const API_REQUEST_TIMEOUT_MS = 90_000
+
+export function apiFetch(url, options = {}) {
+  const controller = new AbortController()
+  const abortFromCaller = () => controller.abort(options.signal.reason)
+  if (options.signal?.aborted) abortFromCaller()
+  else options.signal?.addEventListener('abort', abortFromCaller, { once: true })
+  const timeout = window.setTimeout(() => {
+    controller.abort(new DOMException('API request timed out', 'TimeoutError'))
+  }, API_REQUEST_TIMEOUT_MS)
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => {
+    window.clearTimeout(timeout)
+    options.signal?.removeEventListener('abort', abortFromCaller)
+  })
+}
 
 export function apiUrl(path) {
   return `${baseUrl}/${path.replace(/^\/+/, '')}`

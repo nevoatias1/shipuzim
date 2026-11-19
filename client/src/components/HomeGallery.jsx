@@ -41,6 +41,7 @@ function ImageDialog({ image, onClose }) {
 
 export default function HomeGallery({ children }) {
   const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
   const [category, setCategory] = useState('ALL')
   const [selected, setSelected] = useState(null)
   const opener = useRef(null)
@@ -49,8 +50,9 @@ export default function HomeGallery({ children }) {
   useEffect(() => {
     const controller = new AbortController()
     getGallery(controller.signal).then((result) => {
-      if (!controller.signal.aborted) setItems(result)
+      if (!controller.signal.aborted) { setItems(result); setLoading(false) }
     }).catch(() => { /* Keep the existing placeholders when the API is unavailable. */ })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
   }, [])
 
@@ -66,6 +68,7 @@ export default function HomeGallery({ children }) {
             <span>{String(live ? visible.length : copy.items.length).padStart(2, '0')}</span> / {live ? String(items.length).padStart(2, '0') : copy.countTotal}
           </span>
         </div>
+        {loading && <p className="gallery-loading" role="status" aria-live="polite" aria-busy="true">{copy.loading}</p>}
         {live && <div className="gallery-filters" role="group" aria-label={copy.filterLabel}>
           {copy.categories.map((option) => (
             <button type="button" key={option.value} aria-pressed={category === option.value} onClick={() => setCategory(option.value)}>{option.label}</button>

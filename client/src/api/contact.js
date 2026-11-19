@@ -1,7 +1,7 @@
-import { apiUrl } from './http.js'
+import { apiFetch, apiUrl } from './http.js'
 
 export async function submitContactRequest(payload) {
-  const response = await fetch(apiUrl('/api/contact'), {
+  const response = await apiFetch(apiUrl('/api/contact'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

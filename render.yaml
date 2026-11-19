@@ -6,7 +6,7 @@ services:
     rootDir: server
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    plan: starter
+    plan: free
     region: frankfurt
     branch: main
     autoDeployTrigger: 'off'

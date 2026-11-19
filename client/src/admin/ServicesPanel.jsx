@@ -110,7 +110,7 @@ export default function ServicesPanel() {
     <section aria-labelledby="service-images-title">
       <h2 id="service-images-title">{copy.servicesTab}</h2>
       <p className="admin-intro">{copy.serviceImagesIntro}</p>
-      {loading && <p role="status">{copy.loading}</p>}
+      {loading && <p role="status" aria-live="polite">{copy.serviceImagesLoading}</p>}
       {error && <div className="admin-error" role="alert"><p>{error}</p><button className="button button-text" type="button" onClick={() => { setError(''); setLoading(true); setAttempt((value) => value + 1) }}>{copy.retry}</button></div>}
       {!loading && !error && <div className="admin-service-grid">
         {siteContent.services.items.map((service) => <ServiceImageCard key={service.key} service={service} url={images[service.key]} onChanged={changed} />)}

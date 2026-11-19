@@ -4,6 +4,8 @@ This is the guide for **Stage 9b: manual deploy**. Stage 9a only prepares and ch
 
 The API runs as a Docker web service in Render Frankfurt. The React client is a Render static site on its global CDN. PostgreSQL lives in Neon Frankfurt; gallery files live in Cloudinary. There is no Render database or persistent disk in `render.yaml`.
 
+The API uses Render's **Free** web-service plan for now. A Free service spins down after 15 minutes without inbound traffic; the first request after that can take about one minute while it wakes up. The client keeps contact, gallery, reviews, and service-image requests in a clear loading state for up to about 90 seconds before timing out. Free web services cannot send SMTP traffic on ports 25, 465, or 587, so keep `APP_MAIL_ENABLED=false` and leave the mail variables empty. To upgrade later, change the API plan from `free` to `starter` in `render.yaml`, apply that plan change in Render, then configure the SMTP variables and set `APP_MAIL_ENABLED=true`.
+
 All values shown here are examples. Enter real credentials in the API service's Render **Environment** screen, never in source files or any `VITE_*` variable. The root `.env.example` is a checklist, not an automatically loaded production configuration file.
 
 ## 1. Prepare the accounts and source
@@ -64,11 +66,11 @@ Store the result privately. Keep the same value across ordinary redeploys; chang
    | Dockerfile/context | `./Dockerfile` / `.` | Not used |
    | Build | Dockerfile runs Maven wrapper with tests skipped | `npm ci && npm run build` |
    | Publish directory | Not used | `dist` |
-   | Plan/region | Starter, Frankfurt | Static CDN; no region field |
+   | Plan/region | Free, Frankfurt | Static CDN; no region field |
    | Health check | `/api/health` | Not used |
    | Rewrite | API routes served by Spring | `/*` → `/index.html` |
 
-3. Render asks for the Blueprint's `sync: false` values. Supply the required values in the tables below. If Render has not assigned the public URLs yet, temporarily use `https://site.invalid` for `CORS_ALLOWED_ORIGIN` and `https://api.invalid` for `VITE_API_URL`; replace both in step 5 before testing. Leave mail settings empty with mail disabled. Supply all five `ADMIN_*` values for the first administrator, or leave all five empty if you will add them together immediately afterward.
+3. Render asks for the Blueprint's `sync: false` values. Supply the required values in the tables below. If Render has not assigned the public URLs yet, temporarily use `https://site.invalid` for `CORS_ALLOWED_ORIGIN` and `https://api.invalid` for `VITE_API_URL`; replace both in step 5 before testing. Keep `APP_MAIL_ENABLED=false` and leave mail settings empty on the Free plan. Supply all five `ADMIN_*` values for the first administrator, or leave all five empty if you will add them together immediately afterward.
 4. Apply the Blueprint when you are ready for its initial deployment. Future automatic deploys are disabled; later code releases are triggered manually in Render. Check the actual public URLs assigned to both services. The examples below are not guaranteed to be available names.
 5. In the API's **Environment**, set `CORS_ALLOWED_ORIGIN` to the exact static-site HTTPS origin, such as `https://shipuzim-site.onrender.com` (no trailing slash/path). In the static site's **Environment**, set `VITE_API_URL` to the API origin, such as `https://shipuzim-api.onrender.com` (no `/api` suffix). Save/redeploy the API and rebuild the site after corrections. The frontend calls the API's public HTTPS URL; there is no Vite development proxy in production.
 6. Watch API startup logs for Flyway migrations and successful Hibernate validation, then check `https://<api-host>/api/health` returns `{"status":"ok"}`. Render supplies `PORT`; Spring reads it. The Docker runtime runs as a non-root user and limits heap to 75% of the 512 MB instance, leaving the remaining memory for JVM/native overhead.
@@ -101,7 +103,7 @@ These belong only to the `shipuzim-api` web service. "Secret" identifies values 
 | `ADMIN_FIRST_NAME` | First administrator's given name; bootstrap only | `Site` | No; personal data |
 | `ADMIN_LAST_NAME` | First administrator's family name; bootstrap only | `Owner` | No; personal data |
 | `ADMIN_EMAIL` | First administrator's email; bootstrap only | `owner@example.com` | No; personal data |
-| `APP_MAIL_ENABLED` | Blueprint defaults to disabled; set true only with all settings below | `false` or `true` | No |
+| `APP_MAIL_ENABLED` | Keep false on Free; after upgrading to Starter, enable only when all settings below are configured | `false` (Free) or `true` (Starter with SMTP configured) | No |
 | `MAIL_HOST` | SMTP provider; required only when mail is enabled | `smtp.example.com` | No |
 | `MAIL_PORT` | SMTP provider's authenticated STARTTLS port | `587` | No |
 | `MAIL_USERNAME` | SMTP provider's account/login | `smtp-user` or `owner@example.com` | No; server-only account identifier |
@@ -109,7 +111,7 @@ These belong only to the `shipuzim-api` web service. "Secret" identifies values 
 | `MAIL_FROM` | Sender approved by your SMTP provider | `website@example.com` | No |
 | `NOTIFY_TO` | Business inbox receiving quote notifications | `owner@example.com` | No; personal data |
 
-Missing `GOOGLE_CLIENT_ID` leaves Google sign-in unavailable while the rest of the API works. Missing required DB/JWT/CORS/Cloudinary settings prevents a healthy startup. Mail is optional; enabling it without complete settings fails startup. SMTP must support authenticated STARTTLS; implicit TLS-only port 465 is not configured by this application.
+Missing `GOOGLE_CLIENT_ID` leaves Google sign-in unavailable while the rest of the API works. Missing required DB/JWT/CORS/Cloudinary settings prevents a healthy startup. Mail must remain disabled on Free because Render blocks outbound SMTP ports 25, 465, and 587. After switching the API to Starter, configure all mail settings and then set `APP_MAIL_ENABLED=true`. SMTP must support authenticated STARTTLS; implicit TLS-only port 465 is not configured by this application. See Render's [Free web service limits](https://render.com/docs/free).
 
 `GALLERY_UPLOAD_DIR` is a development-only local-storage setting and is intentionally absent from the Blueprint. Pool sizes, timeouts, rate-limit defaults, JWT lifetime and error-detail settings stay in the existing Spring configuration; no extra environment overrides are needed for this deployment.
 
@@ -143,7 +145,7 @@ When `VITE_SITE_LIVE` is unset, empty, `false`, or any string other than `true`,
 
 ## 10. Manual post-deploy checklist
 
-- [ ] Both Render services are healthy; API is Frankfurt/Starter and has only the prod profile. Verify no H2 console or local upload storage is enabled.
+- [ ] Both Render services are healthy; API is Frankfurt/Free and has only the prod profile. Verify no H2 console or local upload storage is enabled.
 - [ ] API `/api/health` returns 200, Flyway V1–V4 succeeded, and Hibernate validated the schema. Check startup/memory logs for crashes or restarts under the 512 MB limit.
 - [ ] Refresh `/privacy`, `/admin` and an unknown route directly. The SPA should load the correct page; `/robots.txt` and `/favicon.svg` must return their real files.
 - [ ] Confirm API calls use the API HTTPS origin, CORS accepts only the actual site origin, and no browser request is sent to localhost or a relative static-site `/api` path. Verify Render supplies a trusted `CF-Connecting-IP` and forged X-Forwarded-For values cannot change a client's rate-limit budget.
